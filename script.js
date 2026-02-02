@@ -64,6 +64,8 @@ const translations = {
     pp: 'PP',
     pokemonInfo: 'Información del Pokémon',
     webCreatedBy: 'Web creada por Joaquin L. Villanueva Farber',
+    weakness: 'Debilidad',
+    evolution: 'Evolución',
   },
   en: {
     pageTitle: 'Page',
@@ -97,6 +99,8 @@ const translations = {
     pp: 'PP',
     pokemonInfo: 'Pokemon Information',
     webCreatedBy: 'Web created by Joaquin L. Villanueva Farber',
+    weakness: 'Weakness',
+    evolution: 'Evolution',
   }
 };
 
@@ -124,6 +128,8 @@ let currentDetails = [];
 let moveCache = {};
 let _moveTooltip = null;
 let typeNameCache = {};
+let weaknessCache = {};
+let evolutionCache = {};
 
 // Returns display name in current app language with capitalized first letter
 async function fetchTypeDisplayName(typeKey){
@@ -137,6 +143,74 @@ async function fetchTypeDisplayName(typeKey){
   }catch(e){
     typeNameCache[cacheKey] = typeKey;
     return typeKey;
+  }
+}
+
+// Get weaknesses for a pokemon based on its types
+async function getPokemonWeaknesses(pokemonTypes) {
+  const multipliers = {};
+
+  for (const t of pokemonTypes) {
+    const typeData = await fetchJson(`${API_BASE}/type/${t.type.name}`);
+    const dmg = typeData.damage_relations;
+
+    dmg.double_damage_from.forEach(d => {
+      multipliers[d.name] = (multipliers[d.name] ?? 1) * 2;
+    });
+
+    dmg.half_damage_from.forEach(d => {
+      multipliers[d.name] = (multipliers[d.name] ?? 1) * 0.5;
+    });
+
+    dmg.no_damage_from.forEach(d => {
+      multipliers[d.name] = 0;
+    });
+  }
+
+  return Object.entries(multipliers)
+    .filter(([, m]) => m > 1)
+    .map(([type, multiplier]) => ({
+      type,
+      multiplier
+    }));
+}
+
+// Get evolutions for a pokemon
+async function getPokemonEvolutions(pokemonId){
+  try{
+    const cacheKey = `${pokemonId}`;
+    
+    if(evolutionCache[cacheKey]) return evolutionCache[cacheKey];
+    
+    const pokemon = await fetchJson(`${API_BASE}/pokemon/${pokemonId}`);
+    const speciesUrl = pokemon.species?.url;
+    
+    if(!speciesUrl) return [];
+    
+    const speciesData = await fetchJson(speciesUrl);
+    const evolutionChainUrl = speciesData.evolution_chain?.url;
+    
+    if(!evolutionChainUrl) return [];
+    
+    const evolutionChain = await fetchJson(evolutionChainUrl);
+    const evolutions = [];
+    
+    // Get evolutions from the chain
+    const processChain = (chain) => {
+      if(chain.evolves_to && chain.evolves_to.length > 0){
+        for(const evo of chain.evolves_to){
+          evolutions.push(evo.species.name);
+          processChain(evo);
+        }
+      }
+    };
+    
+    processChain(evolutionChain.chain);
+    
+    evolutionCache[cacheKey] = evolutions;
+    return evolutions;
+  }catch(e){
+    return [];
   }
 }
 
@@ -178,6 +252,7 @@ async function renderCards(list){
       return `<span class="type" data-type="${t.type.name}">${disp}</span>`;
     }));
     const typesHtml = typesArr.join(' ');
+    
     const card = document.createElement('article');
     card.className = 'card';
     card.addEventListener('click', ()=> location.href = `detail.html?name=${pokemon.name}`);
@@ -192,7 +267,7 @@ async function renderCards(list){
     name.style.fontWeight = '600';
     name.style.color = '#111';
     name.style.textTransform = 'capitalize';
-    name.textContent = pokemon.name;
+    name.textContent = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
     const meta = document.createElement('div'); 
     meta.className='meta';
     meta.innerHTML = typesHtml;
@@ -253,11 +328,47 @@ async function loadDetail(){
   if(!name){ container.innerHTML = '<p>Falta nombre o id en la URL.</p>'; return; }
   try{
     const p = await fetchJson(`${API_BASE}/pokemon/${name}`);
-    title.textContent = `#${p.id} ${p.name}`;
+    const capitalizedName = p.name.charAt(0).toUpperCase() + p.name.slice(1);
+    title.textContent = `#${p.id} ${capitalizedName}`;
     const sprite = p.sprites?.other?.['official-artwork']?.front_default || p.sprites?.front_default || '';
     const types = (await Promise.all(p.types.map(async t=> await fetchTypeDisplayName(t.type.name)))).join(', ');
     const abilities = p.abilities.map(a=>a.ability.name).join(', ');
     const statsHtml = p.stats.map(s=>`<div class="stat"><strong>${s.stat.name}</strong><div>${s.base_stat}</div></div>`).join('');
+    
+    // Get weaknesses
+    const weaknesses = await getPokemonWeaknesses(p.types);
+    const weaknessHtml = weaknesses.length > 0 ? `
+      <div class="mb-3">
+        <strong>${t('weakness')}:</strong>
+        <div class="mt-2">
+          ${(
+            await Promise.all(
+              weaknesses.map(async w => `
+                <span class="badge"
+                      style="background:var(--${w.type})">
+                  ${await fetchTypeDisplayName(w.type)}
+                  x${w.multiplier}
+                </span>
+              `)
+            )
+          ).join(' ')}
+        </div>
+      </div>
+    ` : '';
+    
+    // Get evolutions
+    const evolutions = await getPokemonEvolutions(p.id);
+    const evolutionHtml = evolutions.length > 0 ? `
+      <div class="mb-3">
+        <strong>${t('evolution')}:</strong>
+        <div class="mt-2">
+          ${evolutions.map(e => {
+            const capitalizedName = e.charAt(0).toUpperCase() + e.slice(1);
+            return `<a href="detail.html?name=${e}" class="badge bg-info" style="cursor:pointer;text-decoration:none;">${capitalizedName}</a>`;
+          }).join(' ')}
+        </div>
+      </div>
+    ` : '';
 
     container.innerHTML = `
       <div class="row">
@@ -272,9 +383,11 @@ async function loadDetail(){
             <strong>${t('types')}:</strong>
               <div class="mt-2">${(await Promise.all(p.types.map(async t=> `<span class="badge" style="background:var(--${t.type.name})">${await fetchTypeDisplayName(t.type.name)}</span>`)) ).join(' ')}</div>
           </div>
+          ${weaknessHtml}
           <p><strong>${t('height')}:</strong> ${p.height / 10} ${t('m')}</p>
           <p><strong>${t('weight')}:</strong> ${p.weight / 10} ${t('kg')}</p>
           <p><strong>${t('abilities')}:</strong> ${abilities}</p>
+          ${evolutionHtml}
           <h4 class="mt-4">${t('baseStats')}</h4>
           <div class="row">
             ${p.stats.map(s=>`

@@ -65,6 +65,11 @@ body{font-family:Inter,Segoe UI,Arial; margin:0; background:var(--bg); color:#11
 
 .badge{color:#fff !important;font-weight:600}
 
+/* Detail page styles */
+#detail h4{margin-top:1rem;margin-bottom:0.5rem;color:#111;font-weight:700}
+#detail .badge{padding:0.35rem 0.65rem;margin-right:0.25rem;margin-bottom:0.25rem}
+#detail .d-flex.gap-2{gap:0.5rem}
+
 .pagination{display:flex;gap:12px;justify-content:center;align-items:center;padding:12px}
 .page-btn{background:#fff;border:1px solid #ddd;padding:8px 12px;border-radius:8px;cursor:pointer}
 .page-info{font-weight:600}
