@@ -16,6 +16,23 @@ async function fetchJson(url){
 let currentDetails = [];
 let moveCache = {};
 let _moveTooltip = null;
+let typeNameCache = {};
+
+// Returns object { es, en }
+async function fetchTypeNames(typeKey){
+  if(typeNameCache[typeKey]) return typeNameCache[typeKey];
+  try{
+    const data = await fetchJson(`${API_BASE}/type/${typeKey}`);
+    const es = (data.names||[]).find(n=>n.language?.name==='es')?.name || null;
+    const en = (data.names||[]).find(n=>n.language?.name==='en')?.name || typeKey;
+    typeNameCache[typeKey] = { es, en };
+    return typeNameCache[typeKey];
+  }catch(e){
+    const fallback = { es: null, en: typeKey };
+    typeNameCache[typeKey] = fallback;
+    return fallback;
+  }
+}
 
 function showMoveTooltip(html, x, y){
   if(!_moveTooltip){
@@ -42,15 +59,21 @@ function hideMoveTooltip(){
   if(_moveTooltip) _moveTooltip.style.display = 'none';
 }
 
-function renderCards(list){
+async function renderCards(list){
   const wrap = document.getElementById('pokemon-list');
   const typeFilter = document.getElementById('typeSelect')?.value || 'all';
   wrap.innerHTML = '';
-  list.forEach(pokemon=>{
-    if(!pokemon) return;
-    if(typeFilter !== 'all' && !pokemon.types.some(t=>t.type.name === typeFilter)) return;
+  for(const pokemon of list){
+    if(!pokemon) continue;
+    if(typeFilter !== 'all' && !pokemon.types.some(t=>t.type.name === typeFilter)) continue;
     const spriteUrl = pokemon.sprites?.other?.['official-artwork']?.front_default || pokemon.sprites?.front_default || '';
-    const typesHtml = pokemon.types.map(t=>`<span class="type">${t.type.name}</span>`).join('');
+    const typesArr = await Promise.all(pokemon.types.map(async t=>{
+      const names = await fetchTypeNames(t.type.name);
+      // show Spanish with English in parentheses when Spanish exists
+      const disp = names.es && names.es !== names.en ? `${names.es} (${names.en})` : (names.es || names.en);
+      return `<span class="type">${disp}</span>`;
+    }));
+    const typesHtml = typesArr.join(' ');
     const card = document.createElement('article');
     card.className = 'card';
     card.addEventListener('click', ()=> location.href = `detail.html?name=${pokemon.name}`);
@@ -72,7 +95,7 @@ function renderCards(list){
     card.appendChild(name);
     card.appendChild(meta);
     wrap.appendChild(card);
-  });
+  }
 }
 
 async function loadList(pageArg, typeArg){
@@ -104,7 +127,7 @@ async function loadList(pageArg, typeArg){
       currentDetails = await Promise.all(slice.map(p => fetchJson(p.url).catch(()=>null)));
     }
 
-    renderCards(currentDetails.filter(Boolean));
+    await renderCards(currentDetails.filter(Boolean));
     updateActiveFilterLabel(type);
 
     const basePageParam = (n) => `?page=${n}${type && type !== 'all' ? `&type=${encodeURIComponent(type)}` : ''}`;
@@ -126,7 +149,7 @@ async function loadDetail(){
     const p = await fetchJson(`${API_BASE}/pokemon/${name}`);
     title.textContent = `#${p.id} ${p.name}`;
     const sprite = p.sprites?.other?.['official-artwork']?.front_default || p.sprites?.front_default || '';
-    const types = p.types.map(t=>t.type.name).join(', ');
+    const types = (await Promise.all(p.types.map(async t=> await fetchTypeDisplayName(t.type.name)))).join(', ');
     const abilities = p.abilities.map(a=>a.ability.name).join(', ');
     const statsHtml = p.stats.map(s=>`<div class="stat"><strong>${s.stat.name}</strong><div>${s.base_stat}</div></div>`).join('');
 
@@ -141,7 +164,7 @@ async function loadDetail(){
           <h2 class="mb-3">Información del Pokémon</h2>
           <div class="mb-3">
             <strong>Tipos:</strong>
-            <div class="mt-2">${p.types.map(t=>`<span class="badge bg-danger">${t.type.name}</span>`).join(' ')}</div>
+              <div class="mt-2">${(await Promise.all(p.types.map(async t=> `<span class="badge bg-danger">${await fetchTypeDisplayName(t.type.name)}</span>`)) ).join(' ')}</div>
           </div>
           <p><strong>Altura:</strong> ${p.height / 10} m</p>
           <p><strong>Peso:</strong> ${p.weight / 10} kg</p>
@@ -294,14 +317,14 @@ async function attachMoveHover(container){
     b.addEventListener('mouseenter', async (ev)=>{
       document.addEventListener('mousemove', mouseMoveHandler);
       if(moveCache[url]){
-        b.dataset.tip = formatMoveHtml(moveCache[url]);
+        b.dataset.tip = await formatMoveHtmlAsync(moveCache[url]);
         showMoveTooltip(b.dataset.tip, ev.clientX, ev.clientY);
         return;
       }
       try{
         const m = await fetchJson(url);
         moveCache[url] = m;
-        b.dataset.tip = formatMoveHtml(m);
+        b.dataset.tip = await formatMoveHtmlAsync(m);
         showMoveTooltip(b.dataset.tip, ev.clientX, ev.clientY);
       }catch(_){
         b.dataset.tip = 'No se pudo cargar información';
@@ -315,11 +338,18 @@ async function attachMoveHover(container){
   });
 }
 
-function formatMoveHtml(m){
-  const effect = (m.effect_entries||[]).find(e=>e.language?.name==='en')?.short_effect || (m.flavor_text_entries||[]).find(e=>e.language?.name==='en')?.flavor_text || '';
+async function formatMoveHtmlAsync(m){
+  const nameEs = (m.names||[]).find(n=>n.language?.name==='es')?.name;
+  const nameEn = (m.names||[]).find(n=>n.language?.name==='en')?.name;
+  const moveName = nameEs || nameEn || m.name;
+  const effectEs = (m.effect_entries||[]).find(e=>e.language?.name==='es')?.short_effect || (m.flavor_text_entries||[]).find(e=>e.language?.name==='es')?.flavor_text;
+  const effectEn = (m.effect_entries||[]).find(e=>e.language?.name==='en')?.short_effect || (m.flavor_text_entries||[]).find(e=>e.language?.name==='en')?.flavor_text;
+  const effect = effectEs || effectEn || '';
+  const typeKey = m.type?.name || (m.type && m.type.name) || null;
+  const typeDisplay = typeKey ? await fetchTypeDisplayName(typeKey) : (m.type?.name || '-');
   return `
-    <div style="font-weight:600;text-transform:capitalize">${m.name}</div>
-    <div class="muted">Tipo: ${m.type?.name || '-'} — PP: ${m.pp ?? '-'} — Potencia: ${m.power ?? '-'} — Precisión: ${m.accuracy ?? '-'}</div>
+    <div style="font-weight:600;text-transform:capitalize">${moveName}</div>
+    <div class="muted">Tipo: ${typeDisplay} — PP: ${m.pp ?? '-'} — Potencia: ${m.power ?? '-'} — Precisión: ${m.accuracy ?? '-'}</div>
     <div style="margin-top:6px">${effect}</div>
   `;
 }
