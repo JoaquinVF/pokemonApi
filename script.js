@@ -1,5 +1,5 @@
 const API_BASE = 'https://pokeapi.co/api/v2';
-const LIMIT = 20;
+const LIMIT = 50;
 
 function qs(name, defaultVal) {
   const params = new URLSearchParams(location.search);
@@ -147,10 +147,22 @@ function initSearchAndFilters(){
       await fetchJson(`${API_BASE}/pokemon/${q}`);
       location.href = `detail.html?name=${q}`;
     }catch(_){
-      alert('No se encontró ese Pokémon. Prueba con el nombre exacto en inglés.');
+      showErrorToast('No se encontró ese Pokémon. Prueba con el nombre exacto en inglés.');
     }
   });
   select?.addEventListener('change', ()=> location.search = '?page=1');
+}
+
+function showErrorToast(message){
+  const toast = document.createElement('div');
+  toast.className = 'error-toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(()=> toast.classList.add('show'), 10);
+  setTimeout(()=> {
+    toast.classList.remove('show');
+    setTimeout(()=> toast.remove(), 300);
+  }, 4000);
 }
 
 async function loadTypes(){

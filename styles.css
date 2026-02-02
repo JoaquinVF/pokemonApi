@@ -32,3 +32,6 @@ body{font-family:Inter,Segoe UI,Arial; margin:0; background:var(--bg); color:#11
 @media(max-width:600px){.detail-top{flex-direction:column}.detail-sprite{width:160px;height:160px}}
 
 .back-link{position:absolute;left:14px;top:18px;color:var(--muted);text-decoration:none}
+
+.error-toast{position:fixed;bottom:20px;right:20px;background:#dc3545;color:#fff;padding:14px 18px;border-radius:8px;box-shadow:0 4px 12px rgba(220,53,69,0.3);font-size:.9rem;opacity:0;transform:translateY(10px);transition:all .3s ease;z-index:9999}
+.error-toast.show{opacity:1;transform:translateY(0)}
