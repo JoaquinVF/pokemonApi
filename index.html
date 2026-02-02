@@ -4,14 +4,61 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Pokédex - Paginada</title>
+  <link rel="icon" type="image/svg+xml" href="pokeball.svg">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="site-header bg-danger text-white py-5">
     <div class="container">
-      <h1 class="display-4 mb-2">Pokedex</h1>
-      <p class="lead">Gotta Catch 'Em All</p>
+      <div style="max-width: 700px; margin: 0 auto;">
+        <svg viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: auto;">
+          <defs>
+            <style>
+              .pokemon-title {
+                font-family: 'Pokemon Solid', Arial, sans-serif;
+                font-size: 110px;
+                font-weight: bold;
+                letter-spacing: 1px;
+              }
+              .pokemon-subtitle {
+                font-family: Arial, sans-serif;
+                font-size: 36px;
+                font-weight: bold;
+                letter-spacing: 2px;
+              }
+            </style>
+            <!-- Curved path for title (arc shape) -->
+            <path id="titleCurve" d="M 150,200 Q 450,80 750,200" fill="none" stroke="none"/>
+            <!-- Curved path for subtitle (gentle arc) -->
+            <path id="subtitleCurve" d="M 180,220 Q 450,160 720,220" fill="none" stroke="none"/>
+          </defs>
+          
+          <!-- Pokémon Title with curved path -->
+          <g id="pokemon-text">
+            <!-- Blue shadow -->
+            <text class="pokemon-title" fill="none" stroke="#365fac" stroke-width="7" stroke-linecap="round">
+              <textPath href="#titleCurve" startOffset="50%" text-anchor="middle">Pokémon</textPath>
+            </text>
+            <!-- Yellow main text -->
+            <text class="pokemon-title" fill="#ffcb00" stroke="#365fac" stroke-width="2">
+              <textPath href="#titleCurve" startOffset="50%" text-anchor="middle">Pokémon</textPath>
+            </text>
+          </g>
+          
+          <!-- Gotta Catch 'Em All Subtitle with curved path -->
+          <g id="subtitle-text">
+            <!-- Blue shadow -->
+            <text class="pokemon-subtitle" fill="none" stroke="#0052cc" stroke-width="3" stroke-linecap="round">
+              <textPath href="#subtitleCurve" startOffset="50%" text-anchor="middle">Gotta Catch 'Em All!</textPath>
+            </text>
+            <!-- White main text with blue outline -->
+            <text class="pokemon-subtitle" fill="white" stroke="#0052cc" stroke-width="1.5">
+              <textPath href="#subtitleCurve" startOffset="50%" text-anchor="middle">Gotta Catch 'Em All!</textPath>
+            </text>
+          </g>
+        </svg>
+      </div>
     </div>
   </header>
 
@@ -39,6 +86,12 @@
       </nav>
     </div>
   </main>
+
+  <footer class="site-footer bg-dark text-white text-center py-3 mt-5">
+    <div class="container">
+      <p id="footer-text" class="mb-0">Web creada por Joaquin L. Villanueva Farber</p>
+    </div>
+  </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="script.js"></script>

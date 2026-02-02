@@ -1,6 +1,81 @@
 const API_BASE = 'https://pokeapi.co/api/v2';
 const LIMIT = 50;
 
+// Language detection and UI translations
+let appLang = 'es'; // default to Spanish
+const translations = {
+  es: {
+    pageTitle: 'Página',
+    of: 'de',
+    all: 'Todos los tipos',
+    search: 'Buscar por nombre (ej. pikachu)',
+    searchBtn: 'Buscar',
+    filterBtn: 'Filtrar por tipo',
+    activeFilter: 'Filtro activo',
+    clearFilter: '(limpiar)',
+    prev: 'Anterior',
+    next: 'Siguiente',
+    notFound: 'No se encontró ese Pokémon. Prueba con el nombre exacto en inglés.',
+    noResults: 'No hay resultados',
+    height: 'Altura',
+    weight: 'Peso',
+    m: 'm',
+    kg: 'kg',
+    types: 'Tipos',
+    abilities: 'Habilidades',
+    baseStats: 'Estadísticas Base',
+    moves: 'Movimientos (algunos)',
+    back: '← Volver',
+    loading: 'Cargando...',
+    error: 'Error cargando pokemones',
+    errorDetail: 'Error cargando detalle',
+    errorLoading: 'Error cargando información',
+    type: 'Tipo',
+    power: 'Potencia',
+    accuracy: 'Precisión',
+    pp: 'PP',
+    pokemonInfo: 'Información del Pokémon',
+    webCreatedBy: 'Web creada por Joaquin L. Villanueva Farber',
+  },
+  en: {
+    pageTitle: 'Page',
+    of: 'of',
+    all: 'All types',
+    search: 'Search by name (e.g. pikachu)',
+    searchBtn: 'Search',
+    filterBtn: 'Filter by type',
+    activeFilter: 'Active filter',
+    clearFilter: '(clear)',
+    prev: 'Previous',
+    next: 'Next',
+    notFound: 'Pokemon not found. Try the exact English name.',
+    noResults: 'No results',
+    height: 'Height',
+    weight: 'Weight',
+    m: 'm',
+    kg: 'kg',
+    types: 'Types',
+    abilities: 'Abilities',
+    baseStats: 'Base Stats',
+    moves: 'Moves (some)',
+    back: '← Back',
+    loading: 'Loading...',
+    error: 'Error loading pokemons',
+    errorDetail: 'Error loading detail',
+    errorLoading: 'Error loading information',
+    type: 'Type',
+    power: 'Power',
+    accuracy: 'Accuracy',
+    pp: 'PP',
+    pokemonInfo: 'Pokemon Information',
+    webCreatedBy: 'Web created by Joaquin L. Villanueva Farber',
+  }
+};
+
+function t(key){
+  return translations[appLang][key] || translations['es'][key] || key;
+}
+
 function qs(name, defaultVal) {
   const params = new URLSearchParams(location.search);
   return params.get(name) ?? defaultVal;
@@ -18,19 +93,23 @@ let moveCache = {};
 let _moveTooltip = null;
 let typeNameCache = {};
 
-// Returns object { es, en }
-async function fetchTypeNames(typeKey){
-  if(typeNameCache[typeKey]) return typeNameCache[typeKey];
+// Returns display name in current app language
+async function fetchTypeDisplayName(typeKey){
+  const cacheKey = `${typeKey}_${appLang}`;
+  if(typeNameCache[cacheKey] !== undefined) return typeNameCache[cacheKey];
   try{
     const data = await fetchJson(`${API_BASE}/type/${typeKey}`);
-    const es = (data.names||[]).find(n=>n.language?.name==='es')?.name || null;
-    const en = (data.names||[]).find(n=>n.language?.name==='en')?.name || typeKey;
-    typeNameCache[typeKey] = { es, en };
-    return typeNameCache[typeKey];
+    let display = typeKey;
+    if(appLang === 'es'){
+      display = (data.names||[]).find(n=>n.language?.name==='es')?.name || typeKey;
+    } else {
+      display = (data.names||[]).find(n=>n.language?.name==='en')?.name || typeKey;
+    }
+    typeNameCache[cacheKey] = display;
+    return display;
   }catch(e){
-    const fallback = { es: null, en: typeKey };
-    typeNameCache[typeKey] = fallback;
-    return fallback;
+    typeNameCache[cacheKey] = typeKey;
+    return typeKey;
   }
 }
 
@@ -68,9 +147,7 @@ async function renderCards(list){
     if(typeFilter !== 'all' && !pokemon.types.some(t=>t.type.name === typeFilter)) continue;
     const spriteUrl = pokemon.sprites?.other?.['official-artwork']?.front_default || pokemon.sprites?.front_default || '';
     const typesArr = await Promise.all(pokemon.types.map(async t=>{
-      const names = await fetchTypeNames(t.type.name);
-      // show Spanish with English in parentheses when Spanish exists
-      const disp = names.es && names.es !== names.en ? `${names.es} (${names.en})` : (names.es || names.en);
+      const disp = await fetchTypeDisplayName(t.type.name);
       return `<span class="type">${disp}</span>`;
     }));
     const typesHtml = typesArr.join(' ');
@@ -109,7 +186,7 @@ async function loadList(pageArg, typeArg){
     if(type === 'all'){
       const listUrl = `${API_BASE}/pokemon?limit=${LIMIT}&offset=${offset}`;
       const data = await fetchJson(listUrl);
-      pageInfo.textContent = `Página ${page} — ${offset+1}–${Math.min(offset+LIMIT, data.count)} de ${data.count}`;
+      pageInfo.textContent = `${t('pageTitle')} ${page} — ${offset+1}–${Math.min(offset+LIMIT, data.count)} ${t('of')} ${data.count}`;
       prevBtn.disabled = !data.previous;
       nextBtn.disabled = !data.next;
 
@@ -119,7 +196,7 @@ async function loadList(pageArg, typeArg){
       const typeData = await fetchJson(`${API_BASE}/type/${type}`);
       const allOfType = (typeData.pokemon || []).map(p => p.pokemon);
       const total = allOfType.length;
-      pageInfo.textContent = `Página ${page} — ${offset+1}–${Math.min(offset+LIMIT, total)} de ${total}`;
+      pageInfo.textContent = `${t('pageTitle')} ${page} — ${offset+1}–${Math.min(offset+LIMIT, total)} ${t('of')} ${total}`;
       prevBtn.disabled = page <= 1;
       nextBtn.disabled = offset + LIMIT >= total;
 
@@ -135,7 +212,7 @@ async function loadList(pageArg, typeArg){
     nextBtn.onclick = ()=> { const n = page+1; history.pushState({},'', basePageParam(n)); loadList(n, type); };
   }catch(e){
     const wrap = document.getElementById('pokemon-list');
-    wrap.innerHTML = `<p>Error cargando pokemones: ${e.message}</p>`;
+    wrap.innerHTML = `<p>${t('error')}: ${e.message}</p>`;
   }
 }
 
@@ -161,15 +238,15 @@ async function loadDetail(){
           </div>
         </div>
         <div class="col-md-8">
-          <h2 class="mb-3">Información del Pokémon</h2>
+          <h2 class="mb-3">${t('pokemonInfo')}</h2>
           <div class="mb-3">
-            <strong>Tipos:</strong>
+            <strong>${t('types')}:</strong>
               <div class="mt-2">${(await Promise.all(p.types.map(async t=> `<span class="badge bg-danger">${await fetchTypeDisplayName(t.type.name)}</span>`)) ).join(' ')}</div>
           </div>
-          <p><strong>Altura:</strong> ${p.height / 10} m</p>
-          <p><strong>Peso:</strong> ${p.weight / 10} kg</p>
-          <p><strong>Habilidades:</strong> ${abilities}</p>
-          <h4 class="mt-4">Estadísticas Base</h4>
+          <p><strong>${t('height')}:</strong> ${p.height / 10} ${t('m')}</p>
+          <p><strong>${t('weight')}:</strong> ${p.weight / 10} ${t('kg')}</p>
+          <p><strong>${t('abilities')}:</strong> ${abilities}</p>
+          <h4 class="mt-4">${t('baseStats')}</h4>
           <div class="row">
             ${p.stats.map(s=>`
               <div class="col-md-6 mb-3">
@@ -186,16 +263,26 @@ async function loadDetail(){
         </div>
       </div>
       <section class="mt-5">
-        <h3 class="mb-3">Movimientos (algunos)</h3>
+        <h3 class="mb-3">${t('moves')}</h3>
         <div>${p.moves.slice(0,12).map(m=>`<span class="badge bg-secondary me-2 mb-2 move-badge" data-url="${m.move.url}">${m.move.name}</span>`).join('')}</div>
       </section>
     `;
     // attach hover handlers for move tooltips
     try{ attachMoveHover(container); }catch(e){/* no-op */}
-  }catch(e){ container.innerHTML = `<p>Error cargando detalle: ${e.message}</p>` }
+  }catch(e){ container.innerHTML = `<p>${t('errorDetail')}: ${e.message}</p>` }
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
+  // Detect browser language once at the beginning
+  const browserLang = navigator.language || navigator.userLanguage || 'es';
+  appLang = browserLang.startsWith('en') ? 'en' : 'es';
+  
+  // Update footer text
+  const footerEl = document.getElementById('footer-text');
+  if(footerEl){
+    footerEl.textContent = t('webCreatedBy');
+  }
+
   if(document.getElementById('pokemon-list')){
     loadList();
     initSearchAndFilters();
@@ -225,7 +312,7 @@ function initSearchAndFilters(){
       await fetchJson(`${API_BASE}/pokemon/${q}`);
       location.href = `detail.html?name=${q}`;
     }catch(_){
-      showErrorToast('No se encontró ese Pokémon. Prueba con el nombre exacto en inglés.');
+      showErrorToast(t('notFound'));
     }
   });
 
@@ -244,7 +331,7 @@ function initSearchAndFilters(){
         const matches = data.results.filter(p => p.name.includes(q)).slice(0, 8);
         
         if(matches.length === 0){
-          suggestionsDiv.innerHTML = '<div class="suggestion-item no-results">No hay resultados</div>';
+          suggestionsDiv.innerHTML = `<div class="suggestion-item no-results">${t('noResults')}</div>`;
           return;
         }
 
@@ -254,7 +341,7 @@ function initSearchAndFilters(){
           </div>
         `).join('');
       }catch(e){
-        suggestionsDiv.innerHTML = '<div class="suggestion-item no-results">Error cargando sugerencias</div>';
+        suggestionsDiv.innerHTML = `<div class="suggestion-item no-results">${t('errorLoading')}</div>`;
       }
     }, 300);
   });
@@ -304,7 +391,7 @@ function updateActiveFilterLabel(type){
     el.innerHTML = '';
     return;
   }
-  el.innerHTML = `<div class="badge bg-info text-dark">Filtro activo: ${type}</div> <button id="clearFilter" class="btn btn-sm btn-link">(limpiar)</button>`;
+  el.innerHTML = `<div class="badge bg-info text-dark">${t('activeFilter')}: ${type}</div> <button id="clearFilter" class="btn btn-sm btn-link">${t('clearFilter')}</button>`;
   const btn = document.getElementById('clearFilter');
   btn?.addEventListener('click', (e)=>{ e.preventDefault(); history.pushState({},'', '?page=1'); const select = document.getElementById('typeSelect'); if(select) select.value = 'all'; loadList(1,'all'); });
 }
@@ -339,12 +426,16 @@ async function attachMoveHover(container){
 }
 
 async function formatMoveHtmlAsync(m){
-  const nameEs = (m.names||[]).find(n=>n.language?.name==='es')?.name;
-  const nameEn = (m.names||[]).find(n=>n.language?.name==='en')?.name;
-  const moveName = nameEs || nameEn || m.name;
-  const effectEs = (m.effect_entries||[]).find(e=>e.language?.name==='es')?.short_effect || (m.flavor_text_entries||[]).find(e=>e.language?.name==='es')?.flavor_text;
-  const effectEn = (m.effect_entries||[]).find(e=>e.language?.name==='en')?.short_effect || (m.flavor_text_entries||[]).find(e=>e.language?.name==='en')?.flavor_text;
-  const effect = effectEs || effectEn || '';
+  let moveName, effect;
+  
+  if(appLang === 'es'){
+    moveName = (m.names||[]).find(n=>n.language?.name==='es')?.name || m.name;
+    effect = (m.effect_entries||[]).find(e=>e.language?.name==='es')?.short_effect || (m.flavor_text_entries||[]).find(e=>e.language?.name==='es')?.flavor_text || '';
+  } else {
+    moveName = (m.names||[]).find(n=>n.language?.name==='en')?.name || m.name;
+    effect = (m.effect_entries||[]).find(e=>e.language?.name==='en')?.short_effect || (m.flavor_text_entries||[]).find(e=>e.language?.name==='en')?.flavor_text || '';
+  }
+  
   const typeKey = m.type?.name || (m.type && m.type.name) || null;
   const typeDisplay = typeKey ? await fetchTypeDisplayName(typeKey) : (m.type?.name || '-');
   return `

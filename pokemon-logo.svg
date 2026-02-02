@@ -1,0 +1,38 @@
+<svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <style>
+      .pokemon-title {
+        font-family: 'Pokemon Solid', Arial, sans-serif;
+        font-size: 120px;
+        font-weight: bold;
+        letter-spacing: 2px;
+      }
+      .pokemon-subtitle {
+        font-family: Arial, sans-serif;
+        font-size: 32px;
+        font-weight: bold;
+        letter-spacing: 3px;
+      }
+    </style>
+    <filter id="shadow3d">
+      <feOffset dx="3" dy="3" />
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
+    </filter>
+  </defs>
+  
+  <!-- Pokémon Title -->
+  <g id="pokemon-text">
+    <!-- Blue shadow/outline effect -->
+    <text x="400" y="100" text-anchor="middle" class="pokemon-title" fill="none" stroke="#365fac" stroke-width="8">Pokémon</text>
+    <!-- Yellow main text -->
+    <text x="400" y="100" text-anchor="middle" class="pokemon-title" fill="#ffcb00" stroke="#365fac" stroke-width="2">Pokémon</text>
+  </g>
+  
+  <!-- Gotta Catch 'Em All Subtitle -->
+  <g id="subtitle-text">
+    <!-- Blue shadow -->
+    <text x="400" y="180" text-anchor="middle" class="pokemon-subtitle" fill="none" stroke="#0052cc" stroke-width="4">Gotta Catch 'Em All!</text>
+    <!-- White main text with blue outline -->
+    <text x="400" y="180" text-anchor="middle" class="pokemon-subtitle" fill="white" stroke="#0052cc" stroke-width="1.5">Gotta Catch 'Em All!</text>
+  </g>
+</svg>
