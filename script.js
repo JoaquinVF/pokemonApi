@@ -139,6 +139,9 @@ function initSearchAndFilters(){
   const form = document.getElementById('searchForm');
   const input = document.getElementById('searchInput');
   const select = document.getElementById('typeSelect');
+  const suggestionsDiv = document.getElementById('searchSuggestions');
+  let suggestionTimeout;
+
   form?.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const q = input.value.trim().toLowerCase();
@@ -150,6 +153,41 @@ function initSearchAndFilters(){
       showErrorToast('No se encontró ese Pokémon. Prueba con el nombre exacto en inglés.');
     }
   });
+
+  input?.addEventListener('input', async (e)=>{
+    clearTimeout(suggestionTimeout);
+    const q = e.target.value.trim().toLowerCase();
+    
+    if(!q){
+      suggestionsDiv.innerHTML = '';
+      return;
+    }
+
+    suggestionTimeout = setTimeout(async ()=>{
+      try{
+        const data = await fetchJson(`${API_BASE}/pokemon?limit=1000`);
+        const matches = data.results.filter(p => p.name.includes(q)).slice(0, 8);
+        
+        if(matches.length === 0){
+          suggestionsDiv.innerHTML = '<div class="suggestion-item no-results">No hay resultados</div>';
+          return;
+        }
+
+        suggestionsDiv.innerHTML = matches.map(p => `
+          <div class="suggestion-item" onclick="location.href='detail.html?name=${p.name}'">
+            <div class="suggestion-name">${p.name}</div>
+          </div>
+        `).join('');
+      }catch(e){
+        suggestionsDiv.innerHTML = '<div class="suggestion-item no-results">Error cargando sugerencias</div>';
+      }
+    }, 300);
+  });
+
+  input?.addEventListener('blur', ()=>{
+    setTimeout(()=> suggestionsDiv.innerHTML = '', 200);
+  });
+
   select?.addEventListener('change', ()=> location.search = '?page=1');
 }
 
