@@ -65,6 +65,42 @@ body{font-family:Inter,Segoe UI,Arial; margin:0; background:var(--bg); color:#11
 
 .badge{color:#fff !important;font-weight:600}
 
+.bg-info {
+  background-color: #e9ecef !important;
+  color: #111111 !important;
+}
+
+.evo-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 10px;
+  width: 110px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.evo-card img {
+  width: 72px;
+  height: 72px;
+}
+
+.evo-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
+.evo-level {
+  font-size: 0.75rem;
+  color: #666666;
+  margin-top: 4px;
+}
+
+.evo-arrow {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #999999;
+}
+
 /* Detail page styles */
 #detail h4{margin-top:1rem;margin-bottom:0.5rem;color:#111;font-weight:700}
 #detail .badge{padding:0.35rem 0.65rem;margin-right:0.25rem;margin-bottom:0.25rem}

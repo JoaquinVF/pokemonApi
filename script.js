@@ -175,43 +175,27 @@ async function getPokemonWeaknesses(pokemonTypes) {
     }));
 }
 
-// Get evolutions for a pokemon
-async function getPokemonEvolutions(pokemonId){
-  try{
-    const cacheKey = `${pokemonId}`;
-    
-    if(evolutionCache[cacheKey]) return evolutionCache[cacheKey];
-    
-    const pokemon = await fetchJson(`${API_BASE}/pokemon/${pokemonId}`);
-    const speciesUrl = pokemon.species?.url;
-    
-    if(!speciesUrl) return [];
-    
-    const speciesData = await fetchJson(speciesUrl);
-    const evolutionChainUrl = speciesData.evolution_chain?.url;
-    
-    if(!evolutionChainUrl) return [];
-    
-    const evolutionChain = await fetchJson(evolutionChainUrl);
-    const evolutions = [];
-    
-    // Get evolutions from the chain
-    const processChain = (chain) => {
-      if(chain.evolves_to && chain.evolves_to.length > 0){
-        for(const evo of chain.evolves_to){
-          evolutions.push(evo.species.name);
-          processChain(evo);
-        }
-      }
+async function getEvolutionChain(pokemonId) {
+  const pokemon = await fetchJson(`${API_BASE}/pokemon/${pokemonId}`);
+  const species = await fetchJson(pokemon.species.url);
+  const chainData = await fetchJson(species.evolution_chain.url);
+
+  const chain = [];
+
+  function traverse(node) {
+    const evo = {
+      name: node.species.name,
+      minLevel: node.evolution_details[0]?.min_level ?? null
     };
-    
-    processChain(evolutionChain.chain);
-    
-    evolutionCache[cacheKey] = evolutions;
-    return evolutions;
-  }catch(e){
-    return [];
+    chain.push(evo);
+
+    if (node.evolves_to.length > 0) {
+      traverse(node.evolves_to[0]);
+    }
   }
+
+  traverse(chainData.chain);
+  return chain;
 }
 
 function showMoveTooltip(html, x, y){
@@ -357,18 +341,47 @@ async function loadDetail(){
     ` : '';
     
     // Get evolutions
-    const evolutions = await getPokemonEvolutions(p.id);
-    const evolutionHtml = evolutions.length > 0 ? `
-      <div class="mb-3">
-        <strong>${t('evolution')}:</strong>
-        <div class="mt-2">
-          ${evolutions.map(e => {
-            const capitalizedName = e.charAt(0).toUpperCase() + e.slice(1);
-            return `<a href="detail.html?name=${e}" class="badge bg-info" style="cursor:pointer;text-decoration:none;">${capitalizedName}</a>`;
-          }).join(' ')}
+    const evolutionChain = await getEvolutionChain(p.id);
+    let evolutionHtml = '';
+    if (evolutionChain.length > 1) {
+      const evoCards = await Promise.all(
+        evolutionChain.map(async (evo, index) => {
+          const evoData = await fetchJson(`${API_BASE}/pokemon/${evo.name}`);
+          const sprite = evoData.sprites.front_default;
+          const displayName = evo.name.charAt(0).toUpperCase() + evo.name.slice(1);
+
+          return `
+            <div class="text-center">
+              <div class="evo-card"
+                  style="cursor:pointer"
+                  onclick="location.href='detail.html?name=${evo.name}'">
+                <img src="${sprite}" alt="${displayName}">
+                <div class="evo-name">${displayName}</div>
+              </div>
+              <div class="evo-level">
+                ${
+                  index === evolutionChain.length - 1
+                    ? 'Max'
+                    : evo.minLevel
+                      ? `Level ${evo.minLevel}`
+                      : 'Base'
+                }
+              </div>
+            </div>
+            ${index < evolutionChain.length - 1 ? `<div class="evo-arrow">→</div>` : ''}
+          `;
+        })
+      );
+
+      evolutionHtml = `
+        <div class="mb-4">
+          <strong>${t('evolution')}:</strong>
+          <div class="d-flex align-items-center gap-3 mt-3 flex-wrap">
+            ${evoCards.join('')}
+          </div>
         </div>
-      </div>
-    ` : '';
+      `;
+    }
 
     container.innerHTML = `
       <div class="row">
