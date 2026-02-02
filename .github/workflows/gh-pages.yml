@@ -4,11 +4,22 @@ on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # preserve the GITHUB_TOKEN so later steps can push
+          persist-credentials: true
+          fetch-depth: 0
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
