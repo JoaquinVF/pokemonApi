@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pokédex - Paginada</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1>Pokédex</h1>
+    <p>Explora pokemones — tarjetas responsivas y paginadas</p>
+  </header>
+
+  <main>
+    <div class="controls">
+      <form id="searchForm" class="search-form">
+        <input id="searchInput" type="search" placeholder="Buscar por nombre (ej. pikachu)" aria-label="Buscar pokemon">
+        <button type="submit">Buscar</button>
+      </form>
+      <select id="typeSelect" aria-label="Filtrar por tipo">
+        <option value="all">Todos los tipos</option>
+      </select>
+    </div>
+    <section id="pokemon-list" class="grid"></section>
+
+    <nav class="pagination" id="pagination">
+      <button id="prevBtn" class="page-btn">Anterior</button>
+      <span id="pageInfo" class="page-info"></span>
+      <button id="nextBtn" class="page-btn">Siguiente</button>
+    </nav>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
