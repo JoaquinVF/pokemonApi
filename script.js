@@ -3,6 +3,34 @@ const LIMIT = 50;
 
 // Language detection and UI translations
 let appLang = 'es'; // default to Spanish
+const typeTranslations = {
+  normal: { es: 'Normal', en: 'Normal' },
+  fighting: { es: 'Lucha', en: 'Fighting' },
+  flying: { es: 'Volador', en: 'Flying' },
+  poison: { es: 'Veneno', en: 'Poison' },
+  ground: { es: 'Tierra', en: 'Ground' },
+  rock: { es: 'Roca', en: 'Rock' },
+  bug: { es: 'Bicho', en: 'Bug' },
+  ghost: { es: 'Fantasma', en: 'Ghost' },
+  steel: { es: 'Acero', en: 'Steel' },
+  fire: { es: 'Fuego', en: 'Fire' },
+  water: { es: 'Agua', en: 'Water' },
+  grass: { es: 'Planta', en: 'Grass' },
+  electric: { es: 'Eléctrico', en: 'Electric' },
+  psychic: { es: 'Psíquico', en: 'Psychic' },
+  ice: { es: 'Hielo', en: 'Ice' },
+  dragon: { es: 'Dragón', en: 'Dragon' },
+  dark: { es: 'Siniestro', en: 'Dark' },
+  fairy: { es: 'Hada', en: 'Fairy' },
+};
+const statTranslations = {
+  hp: { es: 'PS', en: 'HP' },
+  attack: { es: 'Ataque', en: 'Attack' },
+  defense: { es: 'Defensa', en: 'Defense' },
+  'special-attack': { es: 'Ataque Esp.', en: 'Sp. Atk' },
+  'special-defense': { es: 'Defensa Esp.', en: 'Sp. Def' },
+  speed: { es: 'Velocidad', en: 'Speed' },
+};
 const translations = {
   es: {
     pageTitle: 'Página',
@@ -76,6 +104,10 @@ function t(key){
   return translations[appLang][key] || translations['es'][key] || key;
 }
 
+function getStatTranslation(statName){
+  return statTranslations[statName]?.[appLang] || statName;
+}
+
 function qs(name, defaultVal) {
   const params = new URLSearchParams(location.search);
   return params.get(name) ?? defaultVal;
@@ -93,18 +125,13 @@ let moveCache = {};
 let _moveTooltip = null;
 let typeNameCache = {};
 
-// Returns display name in current app language
+// Returns display name in current app language with capitalized first letter
 async function fetchTypeDisplayName(typeKey){
   const cacheKey = `${typeKey}_${appLang}`;
   if(typeNameCache[cacheKey] !== undefined) return typeNameCache[cacheKey];
   try{
-    const data = await fetchJson(`${API_BASE}/type/${typeKey}`);
-    let display = typeKey;
-    if(appLang === 'es'){
-      display = (data.names||[]).find(n=>n.language?.name==='es')?.name || typeKey;
-    } else {
-      display = (data.names||[]).find(n=>n.language?.name==='en')?.name || typeKey;
-    }
+    let display = typeTranslations[typeKey]?.[appLang] || typeKey;
+    display = display.charAt(0).toUpperCase() + display.slice(1);
     typeNameCache[cacheKey] = display;
     return display;
   }catch(e){
@@ -148,7 +175,7 @@ async function renderCards(list){
     const spriteUrl = pokemon.sprites?.other?.['official-artwork']?.front_default || pokemon.sprites?.front_default || '';
     const typesArr = await Promise.all(pokemon.types.map(async t=>{
       const disp = await fetchTypeDisplayName(t.type.name);
-      return `<span class="type">${disp}</span>`;
+      return `<span class="type" data-type="${t.type.name}">${disp}</span>`;
     }));
     const typesHtml = typesArr.join(' ');
     const card = document.createElement('article');
@@ -161,8 +188,10 @@ async function renderCards(list){
     title.className='pokemon-name'; 
     title.textContent = `#${pokemon.id}`;
     const name = document.createElement('div');
-    name.style.fontSize = '0.8rem';
-    name.style.color = '#666';
+    name.style.fontSize = '0.9rem';
+    name.style.fontWeight = '600';
+    name.style.color = '#111';
+    name.style.textTransform = 'capitalize';
     name.textContent = pokemon.name;
     const meta = document.createElement('div'); 
     meta.className='meta';
@@ -241,7 +270,7 @@ async function loadDetail(){
           <h2 class="mb-3">${t('pokemonInfo')}</h2>
           <div class="mb-3">
             <strong>${t('types')}:</strong>
-              <div class="mt-2">${(await Promise.all(p.types.map(async t=> `<span class="badge bg-danger">${await fetchTypeDisplayName(t.type.name)}</span>`)) ).join(' ')}</div>
+              <div class="mt-2">${(await Promise.all(p.types.map(async t=> `<span class="badge" style="background:var(--${t.type.name})">${await fetchTypeDisplayName(t.type.name)}</span>`)) ).join(' ')}</div>
           </div>
           <p><strong>${t('height')}:</strong> ${p.height / 10} ${t('m')}</p>
           <p><strong>${t('weight')}:</strong> ${p.weight / 10} ${t('kg')}</p>
@@ -251,7 +280,7 @@ async function loadDetail(){
             ${p.stats.map(s=>`
               <div class="col-md-6 mb-3">
                 <div class="d-flex justify-content-between mb-1">
-                  <strong>${s.stat.name}</strong>
+                  <strong>${getStatTranslation(s.stat.name)}</strong>
                   <span>${s.base_stat}</span>
                 </div>
                 <div class="progress">
@@ -281,6 +310,22 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const footerEl = document.getElementById('footer-text');
   if(footerEl){
     footerEl.textContent = t('webCreatedBy');
+  }
+
+  // Update button texts
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const searchInput = document.getElementById('searchInput');
+  const searchBtn = document.querySelector('#searchForm button');
+  const typeSelect = document.getElementById('typeSelect');
+  
+  if(prevBtn) prevBtn.textContent = t('prev');
+  if(nextBtn) nextBtn.textContent = t('next');
+  if(searchInput) searchInput.placeholder = t('search');
+  if(searchBtn) searchBtn.textContent = t('searchBtn');
+  if(typeSelect) {
+    const firstOpt = typeSelect.options[0];
+    if(firstOpt) firstOpt.textContent = t('all');
   }
 
   if(document.getElementById('pokemon-list')){
@@ -316,9 +361,13 @@ function initSearchAndFilters(){
     }
   });
 
+  let currentSuggestionIndex = -1;
+  let totalSuggestions = 0;
+
   input?.addEventListener('input', async (e)=>{
     clearTimeout(suggestionTimeout);
     const q = e.target.value.trim().toLowerCase();
+    currentSuggestionIndex = -1;
     
     if(!q){
       suggestionsDiv.innerHTML = '';
@@ -329,14 +378,15 @@ function initSearchAndFilters(){
       try{
         const data = await fetchJson(`${API_BASE}/pokemon?limit=1000`);
         const matches = data.results.filter(p => p.name.includes(q)).slice(0, 8);
+        totalSuggestions = matches.length;
         
         if(matches.length === 0){
           suggestionsDiv.innerHTML = `<div class="suggestion-item no-results">${t('noResults')}</div>`;
           return;
         }
 
-        suggestionsDiv.innerHTML = matches.map(p => `
-          <div class="suggestion-item" onclick="location.href='detail.html?name=${p.name}'">
+        suggestionsDiv.innerHTML = matches.map((p, idx) => `
+          <div class="suggestion-item" data-index="${idx}" onclick="location.href='detail.html?name=${p.name}'">
             <div class="suggestion-name">${p.name}</div>
           </div>
         `).join('');
@@ -344,6 +394,24 @@ function initSearchAndFilters(){
         suggestionsDiv.innerHTML = `<div class="suggestion-item no-results">${t('errorLoading')}</div>`;
       }
     }, 300);
+  });
+
+  input?.addEventListener('keydown', (e)=>{
+    const items = suggestionsDiv.querySelectorAll('.suggestion-item:not(.no-results)');
+    if(items.length === 0) return;
+    
+    if(e.key === 'ArrowDown'){
+      e.preventDefault();
+      currentSuggestionIndex = Math.min(currentSuggestionIndex + 1, items.length - 1);
+      items.forEach((item, idx) => item.style.background = idx === currentSuggestionIndex ? '#f5f5f5' : '');
+    } else if(e.key === 'ArrowUp'){
+      e.preventDefault();
+      currentSuggestionIndex = Math.max(currentSuggestionIndex - 1, -1);
+      items.forEach((item, idx) => item.style.background = idx === currentSuggestionIndex ? '#f5f5f5' : '');
+    } else if(e.key === 'Enter' && currentSuggestionIndex >= 0){
+      e.preventDefault();
+      items[currentSuggestionIndex].click();
+    }
   });
 
   input?.addEventListener('blur', ()=>{
@@ -376,7 +444,12 @@ async function loadTypes(){
     const select = document.getElementById('typeSelect');
     if(!select) return;
     data.results.forEach(t=>{
-      const opt = document.createElement('option'); opt.value = t.name; opt.textContent = t.name; select.appendChild(opt);
+      const opt = document.createElement('option'); 
+      opt.value = t.name;
+      const translated = typeTranslations[t.name]?.[appLang] || t.name;
+      const display = translated.charAt(0).toUpperCase() + translated.slice(1);
+      opt.textContent = display;
+      select.appendChild(opt);
     });
     // Preserve selected type from URL (if any)
     const current = qs('type', 'all');
@@ -391,7 +464,9 @@ function updateActiveFilterLabel(type){
     el.innerHTML = '';
     return;
   }
-  el.innerHTML = `<div class="badge bg-info text-dark">${t('activeFilter')}: ${type}</div> <button id="clearFilter" class="btn btn-sm btn-link">${t('clearFilter')}</button>`;
+  const translated = typeTranslations[type]?.[appLang] || type;
+  const display = translated.charAt(0).toUpperCase() + translated.slice(1);
+  el.innerHTML = `<div class="badge bg-info text-dark">${t('activeFilter')}: ${display}</div> <button id="clearFilter" class="btn btn-sm btn-link">${t('clearFilter')}</button>`;
   const btn = document.getElementById('clearFilter');
   btn?.addEventListener('click', (e)=>{ e.preventDefault(); history.pushState({},'', '?page=1'); const select = document.getElementById('typeSelect'); if(select) select.value = 'all'; loadList(1,'all'); });
 }
