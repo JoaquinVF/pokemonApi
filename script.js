@@ -263,6 +263,55 @@ async function renderCards(list){
   }
 }
 
+// Build array of page numbers to show (Google-style: 3 before, current, 3 after + first/last)
+function getPageNumbersToShow(currentPage, totalPages) {
+  if (totalPages <= 0) return [];
+  if (totalPages <= 9) return Array.from({ length: totalPages }, (_, i) => i + 1);
+  const delta = 3; // pages before/after current
+  let start = Math.max(1, currentPage - delta);
+  let end = Math.min(totalPages, currentPage + delta);
+  if (end - start < 2 * delta) {
+    if (start === 1) end = Math.min(totalPages, start + 2 * delta);
+    else end = Math.min(totalPages, end);
+    if (end === totalPages) start = Math.max(1, end - 2 * delta);
+  }
+  const pages = new Set([1]);
+  for (let i = start; i <= end; i++) pages.add(i);
+  if (totalPages > 1) pages.add(totalPages);
+  return Array.from(pages).sort((a, b) => a - b);
+}
+
+function renderPageNumbers(currentPage, totalPages, basePageParam) {
+  const container = document.getElementById('pageNumbers');
+  if (!container) return;
+  container.innerHTML = '';
+  if (totalPages <= 1) return;
+
+  const pages = getPageNumbersToShow(currentPage, totalPages);
+  let prevNum = 0;
+  for (const num of pages) {
+    if (prevNum > 0 && num - prevNum > 1) {
+      const ellipsis = document.createElement('span');
+      ellipsis.className = 'page-ellipsis px-2';
+      ellipsis.setAttribute('aria-hidden', 'true');
+      ellipsis.textContent = '…';
+      container.appendChild(ellipsis);
+    }
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = num === currentPage ? 'btn btn-primary page-num' : 'btn btn-outline-primary page-num';
+    btn.textContent = num;
+    btn.setAttribute('aria-label', `${t('pageTitle')} ${num}`);
+    if (num === currentPage) btn.setAttribute('aria-current', 'page');
+    btn.onclick = () => {
+      history.pushState({}, '', basePageParam(num));
+      loadList(num, qs('type', 'all'));
+    };
+    container.appendChild(btn);
+    prevNum = num;
+  }
+}
+
 async function loadList(pageArg, typeArg){
   const page = Number(pageArg ?? qs('page', '1'));
   const type = typeArg ?? qs('type', 'all');
@@ -271,10 +320,12 @@ async function loadList(pageArg, typeArg){
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
   try{
+    let total = 0;
     if(type === 'all'){
       const listUrl = `${API_BASE}/pokemon?limit=${LIMIT}&offset=${offset}`;
       const data = await fetchJson(listUrl);
-      pageInfo.textContent = `${t('pageTitle')} ${page} — ${offset+1}–${Math.min(offset+LIMIT, data.count)} ${t('of')} ${data.count}`;
+      total = data.count;
+      pageInfo.textContent = `${t('pageTitle')} ${page} — ${offset+1}–${Math.min(offset+LIMIT, total)} ${t('of')} ${total}`;
       prevBtn.disabled = !data.previous;
       nextBtn.disabled = !data.next;
 
@@ -283,7 +334,7 @@ async function loadList(pageArg, typeArg){
       // Fetch pokemons for the selected type and paginate the results client-side
       const typeData = await fetchJson(`${API_BASE}/type/${type}`);
       const allOfType = (typeData.pokemon || []).map(p => p.pokemon);
-      const total = allOfType.length;
+      total = allOfType.length;
       pageInfo.textContent = `${t('pageTitle')} ${page} — ${offset+1}–${Math.min(offset+LIMIT, total)} ${t('of')} ${total}`;
       prevBtn.disabled = page <= 1;
       nextBtn.disabled = offset + LIMIT >= total;
@@ -296,6 +347,9 @@ async function loadList(pageArg, typeArg){
     updateActiveFilterLabel(type);
 
     const basePageParam = (n) => `?page=${n}${type && type !== 'all' ? `&type=${encodeURIComponent(type)}` : ''}`;
+    const totalPages = Math.max(1, Math.ceil(total / LIMIT));
+    renderPageNumbers(page, totalPages, basePageParam);
+
     prevBtn.onclick = ()=> { if(page>1){ const n = page-1; history.pushState({},'', basePageParam(n)); loadList(n, type); } };
     nextBtn.onclick = ()=> { const n = page+1; history.pushState({},'', basePageParam(n)); loadList(n, type); };
   }catch(e){
