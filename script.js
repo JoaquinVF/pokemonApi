@@ -131,4 +131,3 @@ async function loadTypes(){
     });
   }catch(e){ console.warn('No se pudieron cargar tipos', e); }
 }
-});
