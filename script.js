@@ -22,19 +22,22 @@ function renderCards(list){
   list.forEach(pokemon=>{
     if(!pokemon) return;
     if(typeFilter !== 'all' && !pokemon.types.some(t=>t.type.name === typeFilter)) return;
-    const card = document.createElement('article');
-    card.className = 'card';
-    card.addEventListener('click', ()=> location.href = `detail.html?name=${pokemon.name}`);
-    const img = document.createElement('div'); img.className='sprite';
     const spriteUrl = pokemon.sprites?.other?.['official-artwork']?.front_default || pokemon.sprites?.front_default || '';
-    img.innerHTML = spriteUrl? `<img src="${spriteUrl}" alt="${pokemon.name}" loading="lazy" style="max-width:100%;height:auto">` : '';
-    const title = document.createElement('div'); title.className='pokemon-name'; title.textContent = `#${pokemon.id} ${pokemon.name}`;
-    const meta = document.createElement('div'); meta.className='meta';
-    pokemon.types.forEach(t=>{
-      const span = document.createElement('span'); span.className='type'; span.textContent = t.type.name; meta.appendChild(span);
-    });
-    card.appendChild(img); card.appendChild(title); card.appendChild(meta);
-    wrap.appendChild(card);
+    const typesHtml = pokemon.types.map(t=>`<span class="badge bg-secondary">${t.type.name}</span>`).join(' ');
+    const col = document.createElement('div');
+    col.className = 'col-12 col-sm-6 col-md-4 col-lg-3';
+    col.innerHTML = `
+      <article class="card h-100" style="cursor:pointer;" onclick="location.href='detail.html?name=${pokemon.name}'">
+        <div class="card-body text-center d-flex flex-column">
+          <div class="mb-3" style="min-height:150px;display:flex;align-items:center;justify-content:center;">
+            ${spriteUrl? `<img src="${spriteUrl}" alt="${pokemon.name}" loading="lazy" style="max-width:100%;height:auto;max-height:150px;">` : ''}
+          </div>
+          <h5 class="card-title">#${pokemon.id} ${pokemon.name}</h5>
+          <div class="mt-auto">${typesHtml}</div>
+        </div>
+      </article>
+    `;
+    wrap.appendChild(col);
   });
 }
 
@@ -77,18 +80,40 @@ async function loadDetail(){
     const statsHtml = p.stats.map(s=>`<div class="stat"><strong>${s.stat.name}</strong><div>${s.base_stat}</div></div>`).join('');
 
     container.innerHTML = `
-      <div class="detail-top">
-        <div class="detail-sprite">${sprite? `<img src="${sprite}" alt="${p.name}" style="max-width:100%;height:auto">` : ''}</div>
-        <div class="detail-body">
-          <p><strong>Tipos:</strong> ${types}</p>
-          <p><strong>Altura:</strong> ${p.height / 10} m — <strong>Peso:</strong> ${p.weight / 10} kg</p>
+      <div class="row">
+        <div class="col-md-4 text-center">
+          <div style="min-height:300px;display:flex;align-items:center;justify-content:center;">
+            ${sprite? `<img src="${sprite}" alt="${p.name}" style="max-width:100%;height:auto;">` : ''}
+          </div>
+        </div>
+        <div class="col-md-8">
+          <h2 class="mb-3">Información del Pokémon</h2>
+          <div class="mb-3">
+            <strong>Tipos:</strong>
+            <div class="mt-2">${p.types.map(t=>`<span class="badge bg-danger">${t.type.name}</span>`).join(' ')}</div>
+          </div>
+          <p><strong>Altura:</strong> ${p.height / 10} m</p>
+          <p><strong>Peso:</strong> ${p.weight / 10} kg</p>
           <p><strong>Habilidades:</strong> ${abilities}</p>
-          <div class="stats">${statsHtml}</div>
+          <h4 class="mt-4">Estadísticas Base</h4>
+          <div class="row">
+            ${p.stats.map(s=>`
+              <div class="col-md-6 mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                  <strong>${s.stat.name}</strong>
+                  <span>${s.base_stat}</span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar" style="width:${(s.base_stat/150)*100}%"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
         </div>
       </div>
-      <section style="margin-top:12px">
-        <h3>Movimientos (algunos)</h3>
-        <div class="meta">${p.moves.slice(0,8).map(m=>`<span class="type">${m.move.name}</span>`).join('')}</div>
+      <section class="mt-5">
+        <h3 class="mb-3">Movimientos (algunos)</h3>
+        <div>${p.moves.slice(0,12).map(m=>`<span class="badge bg-secondary me-2 mb-2">${m.move.name}</span>`).join('')}</div>
       </section>
     `;
   }catch(e){ container.innerHTML = `<p>Error cargando detalle: ${e.message}</p>` }
