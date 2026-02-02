@@ -10,13 +10,13 @@ body{font-family:Inter,Segoe UI,Arial; margin:0; background:var(--bg); color:#11
 .site-header h1{margin:0;font-size:1.6rem}
 .site-header p{margin:6px 0 0;color:var(--muted)}
 
-.grid{display:grid;gap:16px;padding:16px;max-width:1100px;margin:18px auto;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
-.card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 4px 12px rgba(15,20,30,0.06);cursor:pointer;transition:transform .12s,box-shadow .12s;display:flex;flex-direction:column;align-items:center}
-.card:hover{transform:translateY(-6px);box-shadow:0 10px 30px rgba(15,20,30,0.12)}
-.sprite{width:120px;height:120px;display:flex;align-items:center;justify-content:center}
-.pokemon-name{font-weight:600;text-transform:capitalize;margin:6px 0}
-.meta{font-size:.9rem;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-.type{background:#eee;padding:6px 10px;border-radius:999px;font-size:.8rem;text-transform:capitalize}
+.grid{display:grid;gap:12px;padding:16px;max-width:1400px;margin:18px auto;grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+.card{background:var(--card);border-radius:8px;padding:10px;box-shadow:0 2px 8px rgba(15,20,30,0.08);cursor:pointer;transition:transform .12s,box-shadow .12s;display:flex;flex-direction:column;align-items:center;text-align:center}
+.card:hover{transform:translateY(-4px);box-shadow:0 6px 16px rgba(15,20,30,0.12)}
+.sprite{width:80px;height:80px;display:flex;align-items:center;justify-content:center;margin-bottom:6px}
+.pokemon-name{font-weight:600;text-transform:capitalize;margin:4px 0;font-size:.85rem}
+.meta{font-size:.75rem;color:var(--muted);display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.type{background:#eee;padding:3px 6px;border-radius:999px;font-size:.7rem;text-transform:capitalize}
 
 .pagination{display:flex;gap:12px;justify-content:center;align-items:center;padding:12px}
 .page-btn{background:#fff;border:1px solid #ddd;padding:8px 12px;border-radius:8px;cursor:pointer}

@@ -23,21 +23,28 @@ function renderCards(list){
     if(!pokemon) return;
     if(typeFilter !== 'all' && !pokemon.types.some(t=>t.type.name === typeFilter)) return;
     const spriteUrl = pokemon.sprites?.other?.['official-artwork']?.front_default || pokemon.sprites?.front_default || '';
-    const typesHtml = pokemon.types.map(t=>`<span class="badge bg-secondary">${t.type.name}</span>`).join(' ');
-    const col = document.createElement('div');
-    col.className = 'col-12 col-sm-6 col-md-4 col-lg-3';
-    col.innerHTML = `
-      <article class="card h-100" style="cursor:pointer;" onclick="location.href='detail.html?name=${pokemon.name}'">
-        <div class="card-body text-center d-flex flex-column">
-          <div class="mb-3" style="min-height:150px;display:flex;align-items:center;justify-content:center;">
-            ${spriteUrl? `<img src="${spriteUrl}" alt="${pokemon.name}" loading="lazy" style="max-width:100%;height:auto;max-height:150px;">` : ''}
-          </div>
-          <h5 class="card-title">#${pokemon.id} ${pokemon.name}</h5>
-          <div class="mt-auto">${typesHtml}</div>
-        </div>
-      </article>
-    `;
-    wrap.appendChild(col);
+    const typesHtml = pokemon.types.map(t=>`<span class="type">${t.type.name}</span>`).join('');
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.addEventListener('click', ()=> location.href = `detail.html?name=${pokemon.name}`);
+    const img = document.createElement('div'); 
+    img.className='sprite';
+    img.innerHTML = spriteUrl? `<img src="${spriteUrl}" alt="${pokemon.name}" loading="lazy" style="max-width:100%;height:auto;">` : '';
+    const title = document.createElement('div'); 
+    title.className='pokemon-name'; 
+    title.textContent = `#${pokemon.id}`;
+    const name = document.createElement('div');
+    name.style.fontSize = '0.8rem';
+    name.style.color = '#666';
+    name.textContent = pokemon.name;
+    const meta = document.createElement('div'); 
+    meta.className='meta';
+    meta.innerHTML = typesHtml;
+    card.appendChild(img); 
+    card.appendChild(title); 
+    card.appendChild(name);
+    card.appendChild(meta);
+    wrap.appendChild(card);
   });
 }
 
@@ -143,7 +150,7 @@ function initSearchAndFilters(){
       alert('No se encontró ese Pokémon. Prueba con el nombre exacto en inglés.');
     }
   });
-  select?.addEventListener('change', ()=> renderCards(currentDetails.filter(Boolean)));
+  select?.addEventListener('change', ()=> location.search = '?page=1');
 }
 
 async function loadTypes(){
