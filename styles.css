@@ -14,7 +14,8 @@
 }
 body{font-family:Inter,Segoe UI,Arial; margin:0; background:var(--bg); color:#111}
 .site-header{padding:20px 16px; text-align:center; background:linear-gradient(90deg,#fefefe, #f1f6ff)}
-.site-header h1{margin:0;font-size:2.4rem;font-family:'Pokemon Solid', Inter,Segoe UI,Arial;letter-spacing:1px;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,0.05)}
+.site-header h1{margin: 0; font-size: 4.4rem; font-family: 'Pokemon Solid', Inter, Segoe UI, Arial; letter-spacing: 1px; color: #ffcb00; text-shadow: -1px 5px 0 #365fac}
+.site-header .btn{position:relative;z-index:20}
 .site-header p{margin:6px 0 0;color:var(--muted)}
 
 .grid{display:grid;gap:12px;padding:16px;max-width:1400px;margin:18px auto;grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
