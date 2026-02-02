@@ -19,9 +19,10 @@
     <div class="container">
       <div class="controls mb-4 row g-3">
         <form id="searchForm" class="col-md-8">
-          <div class="input-group">
+          <div class="input-group search-wrapper">
             <input id="searchInput" type="search" class="form-control" placeholder="Buscar por nombre (ej. pikachu)" aria-label="Buscar pokemon">
             <button class="btn btn-primary" type="submit">Buscar</button>
+            <div id="searchSuggestions" class="search-suggestions"></div>
           </div>
         </form>
         <select id="typeSelect" class="form-select" style="max-width:200px;" aria-label="Filtrar por tipo">
