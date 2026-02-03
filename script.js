@@ -66,6 +66,8 @@ const translations = {
     webCreatedBy: 'Web creada por Joaquin L. Villanueva Farber',
     weakness: 'Debilidad',
     evolution: 'Evolución',
+    shiny: 'Shiny',
+    normal: 'Normal',
   },
   en: {
     pageTitle: 'Page',
@@ -101,6 +103,8 @@ const translations = {
     webCreatedBy: 'Web created by Joaquin L. Villanueva Farber',
     weakness: 'Weakness',
     evolution: 'Evolution',
+    shiny: 'Shiny',
+    normal: 'Normal',
   }
 };
 
@@ -369,6 +373,7 @@ async function loadDetail(){
     const capitalizedName = p.name.charAt(0).toUpperCase() + p.name.slice(1);
     title.textContent = `#${p.id} ${capitalizedName}`;
     const sprite = p.sprites?.other?.['official-artwork']?.front_default || p.sprites?.front_default || '';
+    const spriteShiny = p.sprites?.other?.['official-artwork']?.front_shiny || p.sprites?.front_shiny || '';
     const types = (await Promise.all(p.types.map(async t=> await fetchTypeDisplayName(t.type.name)))).join(', ');
     const abilities = p.abilities.map(a=>a.ability.name).join(', ');
     const statsHtml = p.stats.map(s=>`<div class="stat"><strong>${s.stat.name}</strong><div>${s.base_stat}</div></div>`).join('');
@@ -437,13 +442,16 @@ async function loadDetail(){
       `;
     }
 
+    const shinyIconHtml = `<img src="shiny-stars.png" class="detail-shiny-icon" alt="">`;
     container.innerHTML = `
-      <div class="row">
-        <div class="col-md-4 text-center">
-          <div style="min-height:300px;display:flex;align-items:center;justify-content:center;">
-            ${sprite? `<img src="${sprite}" alt="${p.name}" style="max-width:100%;height:auto;">` : ''}
+      <div class="detail-card-inner position-relative">
+        ${spriteShiny ? `<button type="button" class="btn btn-sm detail-shiny-btn" id="shinyToggleBtn" aria-pressed="false" aria-label="${t('shiny')}" title="${t('shiny')}">${shinyIconHtml}</button>` : ''}
+        <div class="row">
+          <div class="col-md-4 text-center">
+            <div style="min-height:300px;display:flex;align-items:center;justify-content:center;">
+              ${sprite ? `<img id="detailPokemonSprite" src="${sprite}" alt="${p.name}" style="max-width:100%;height:auto;">` : ''}
+            </div>
           </div>
-        </div>
         <div class="col-md-8">
           <h2 class="mb-3">${t('pokemonInfo')}</h2>
           <div class="mb-3">
@@ -471,11 +479,34 @@ async function loadDetail(){
           </div>
         </div>
       </div>
+      </div>
       <section class="mt-5">
         <h3 class="mb-3">${t('moves')}</h3>
         <div>${p.moves.slice(0,12).map(m=>`<span class="badge bg-secondary me-2 mb-2 move-badge" data-url="${m.move.url}">${m.move.name}</span>`).join('')}</div>
       </section>
     `;
+    if (spriteShiny) {
+      const shinyBtn = document.getElementById('shinyToggleBtn');
+      const detailImg = document.getElementById('detailPokemonSprite');
+      if (shinyBtn && detailImg) {
+        shinyBtn.addEventListener('click', () => {
+          const isShiny = shinyBtn.getAttribute('aria-pressed') === 'true';
+          if (isShiny) {
+            detailImg.src = sprite;
+            shinyBtn.setAttribute('aria-label', t('shiny'));
+            shinyBtn.setAttribute('title', t('shiny'));
+            shinyBtn.setAttribute('aria-pressed', 'false');
+            shinyBtn.classList.remove('detail-shiny-btn--active');
+          } else {
+            detailImg.src = spriteShiny;
+            shinyBtn.setAttribute('aria-label', t('normal'));
+            shinyBtn.setAttribute('title', t('normal'));
+            shinyBtn.setAttribute('aria-pressed', 'true');
+            shinyBtn.classList.add('detail-shiny-btn--active');
+          }
+        });
+      }
+    }
     // attach hover handlers for move tooltips
     try{ attachMoveHover(container); }catch(e){/* no-op */}
   }catch(e){ container.innerHTML = `<p>${t('errorDetail')}: ${e.message}</p>` }
