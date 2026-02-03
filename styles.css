@@ -241,6 +241,16 @@ body{font-family:Inter,Segoe UI,Arial; margin:0; background:var(--bg); color:#11
 .error-toast{position:fixed;bottom:20px;right:20px;background:#dc3545;color:#fff;padding:14px 18px;border-radius:8px;box-shadow:0 4px 12px rgba(220,53,69,0.3);font-size:.9rem;opacity:0;transform:translateY(10px);transition:all .3s ease;z-index:9999}
 .error-toast.show{opacity:1;transform:translateY(0)}
 
+/* Indicador de carga (spinner + texto) */
+.loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:3rem 1rem;color:var(--muted);font-size:1rem}
+.loading-spinner{width:40px;height:40px;border:3px solid #e9ecef;border-top-color:#0d6efd;border-radius:50%;animation:loading-spin .8s linear infinite}
+@keyframes loading-spin{to{transform:rotate(360deg)}}
+.loading-detail{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:1rem;color:var(--muted);font-size:1.1rem}
+.loading-detail .loading-spinner{width:48px;height:48px;border-width:4px}
+.btn-loading{pointer-events:none;position:relative}
+.btn-loading .btn-text{visibility:hidden}
+.btn-loading::after{content:'';position:absolute;width:1em;height:1em;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:loading-spin .6s linear infinite;left:50%;top:50%;margin-left:-0.5em;margin-top:-0.5em}
+
 .controls-search-form{flex:0 0 calc(75% - 0.25rem);min-width:200px}
 .controls-advanced-btn{flex:0 0 calc(25% - 0.25rem);min-width:120px;background:#fff !important;color:#000 !important;border-color:#dee2e6}
 .controls-advanced-btn:hover{background:#f8f9fa !important;color:#000 !important;border-color:#adb5bd}
