@@ -109,22 +109,29 @@ export async function loadDetail() {
       }
     }
 
-    const locationsListHtml = locationLines.length > 0
-      ? locationLines.map(({ areaLabel, versionLabel, methodLabel, levelStr }) => {
-          const part = levelStr ? `${methodLabel} (${lang === 'es' ? 'nivel' : 'level'} ${levelStr})` : methodLabel;
-          return `<li class="detail-location-item">${areaLabel} <span class="text-muted">${versionLabel}</span>: ${part}</li>`;
-        }).join('')
+    const locationsGridHtml = locationLines.length > 0
+      ? `<table class="detail-location-table" role="table">
+          <thead><tr>
+            <th scope="col">${t('locColArea')}</th>
+            <th scope="col">${t('locColGame')}</th>
+            <th scope="col">${t('locColForm')}</th>
+            <th scope="col">${t('locColLevel')}</th>
+          </tr></thead>
+          <tbody>
+            ${locationLines.map(({ areaLabel, versionLabel, methodLabel, levelStr }) =>
+              `<tr><td>${areaLabel}</td><td>${versionLabel}</td><td>${methodLabel}</td><td>${levelStr || '—'}</td></tr>`
+            ).join('')}
+          </tbody>
+        </table>`
       : '';
 
     const habitatHtml = habitatDisplay
       ? `<div class="mb-2"><strong>${t('habitat')}:</strong> ${habitatDisplay}</div>`
       : '';
-    const locationCount = locationLines.length;
-    const locationCountLabel = locationCount > 0 ? ` <span class="detail-location-count">(${locationCount})</span>` : '';
-    const locationsSectionHtml = (habitatHtml || locationsListHtml) ? `
+    const locationsSectionHtml = (habitatHtml || locationsGridHtml) ? `
       <div class="detail-location-section mb-3">
         ${habitatHtml || ''}
-        ${locationsListHtml ? `<div class="${habitatDisplay ? 'mt-2' : ''}"><strong>${t('whereToFind')}:</strong>${locationCountLabel}<ul class="detail-location-list mb-0 mt-1">${locationsListHtml}</ul></div>` : ''}
+        ${locationsGridHtml ? `<div class="${habitatDisplay ? 'mt-2' : ''}"><strong>${t('whereToFind')}:</strong><div class="detail-location-grid-wrap mt-1">${locationsGridHtml}</div></div>` : ''}
       </div>
     ` : '';
 
