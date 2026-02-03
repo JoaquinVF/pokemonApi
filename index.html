@@ -64,15 +64,15 @@
 
   <main class="py-4">
     <div class="container">
-      <div class="controls mb-4 row g-3">
-        <form id="searchForm" class="col-md-8">
+      <div class="controls mb-4 d-flex flex-wrap gap-2 align-items-stretch">
+        <form id="searchForm" class="controls-search-form">
           <div class="input-group search-wrapper">
             <input id="searchInput" type="search" class="form-control" placeholder="Buscar por nombre (ej. pikachu)" aria-label="Buscar pokemon">
             <button class="btn btn-primary" type="submit">Buscar</button>
             <div id="searchSuggestions" class="search-suggestions"></div>
           </div>
         </form>
-        <button type="button" id="advancedSearchBtn" class="btn btn-outline-secondary" aria-expanded="false" aria-controls="advancedSearchAccordion">
+        <button type="button" id="advancedSearchBtn" class="btn btn-outline-secondary controls-advanced-btn" aria-expanded="false" aria-controls="advancedSearchAccordion">
           Búsqueda avanzada
         </button>
       </div>

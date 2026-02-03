@@ -3,9 +3,19 @@
  */
 
 import { qs, API_BASE } from './config.js';
-import { fetchJson, fetchTypeDisplayName, getPokemonWeaknesses, getPokemonResistances, getEvolutionChainWithDetails } from './api.js';
-import { t, getStatTranslation, getAppLang } from './translations.js';
+import { fetchJson, fetchTypeDisplayName, getPokemonWeaknesses, getPokemonResistances, getEvolutionChainWithDetails, getPokemonEncounters } from './api.js';
+import { t, getStatTranslation, getAppLang, habitatNames, encounterMethodNames } from './translations.js';
 import { attachMoveHover, attachAbilityHover } from './tooltips.js';
+
+function formatLocationAreaName(name) {
+  if (!name) return '';
+  return name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function getEncounterMethodLabel(methodName) {
+  const lang = getAppLang();
+  return encounterMethodNames[methodName]?.[lang] || (methodName || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
 
 export async function loadDetail() {
   const name = qs('name', null);
@@ -65,9 +75,55 @@ export async function loadDetail() {
     if (species.is_mythical) tagParts.push(`<span class="detail-tag detail-tag-mythical">${t('mythical')}</span>`);
     if (species.is_baby) tagParts.push(`<span class="detail-tag detail-tag-baby">${t('baby')}</span>`);
 
+    const lang = getAppLang();
+    const habitatKey = species.habitat?.name;
+    const habitatDisplay = habitatKey ? (habitatNames[habitatKey]?.[lang] || formatLocationAreaName(habitatKey)) : null;
+
+    const encounters = await getPokemonEncounters(p.location_area_encounters);
+    const locationLines = [];
+    const seen = new Set();
+    for (const enc of encounters) {
+      const areaName = enc.location_area?.name;
+      const areaLabel = formatLocationAreaName(areaName || '');
+      for (const vd of enc.version_details || []) {
+        const versionName = vd.version?.name || '';
+        const versionLabel = formatLocationAreaName(versionName);
+        for (const ed of vd.encounter_details || []) {
+          const methodName = ed.method?.name || '';
+          const methodLabel = getEncounterMethodLabel(methodName);
+          const minL = ed.min_level ?? '';
+          const maxL = ed.max_level ?? '';
+          const levelStr = minL && maxL ? (minL === maxL ? `${minL}` : `${minL}–${maxL}`) : (minL || maxL || '');
+          const key = `${areaLabel}|${versionLabel}|${methodLabel}|${levelStr}`;
+          if (key && !seen.has(key)) {
+            seen.add(key);
+            locationLines.push({ areaLabel, versionLabel, methodLabel, levelStr });
+          }
+        }
+      }
+    }
+
+    const locationsListHtml = locationLines.length > 0
+      ? locationLines.map(({ areaLabel, versionLabel, methodLabel, levelStr }) => {
+          const part = levelStr ? `${methodLabel} (${lang === 'es' ? 'nivel' : 'level'} ${levelStr})` : methodLabel;
+          return `<li class="detail-location-item">${areaLabel} <span class="text-muted">${versionLabel}</span>: ${part}</li>`;
+        }).join('')
+      : '';
+
+    const habitatHtml = habitatDisplay
+      ? `<div class="mb-2"><strong>${t('habitat')}:</strong> ${habitatDisplay}</div>`
+      : '';
+    const locationCount = locationLines.length;
+    const locationCountLabel = locationCount > 0 ? ` <span class="detail-location-count">(${locationCount})</span>` : '';
+    const locationsSectionHtml = (habitatHtml || locationsListHtml) ? `
+      <div class="detail-location-section mb-3">
+        ${habitatHtml || ''}
+        ${locationsListHtml ? `<div class="${habitatDisplay ? 'mt-2' : ''}"><strong>${t('whereToFind')}:</strong>${locationCountLabel}<ul class="detail-location-list mb-0 mt-1">${locationsListHtml}</ul></div>` : ''}
+      </div>
+    ` : '';
+
     const evolutionChainWithDetails = await getEvolutionChainWithDetails(p.id);
     let evolutionHtml = '';
-    const lang = getAppLang();
     if (evolutionChainWithDetails.length > 1) {
       const evoCards = await Promise.all(
         evolutionChainWithDetails.map(async (evo, index) => {
@@ -169,12 +225,13 @@ export async function loadDetail() {
             <strong>${t('abilities')}:</strong>
             <div class="mt-2 ability-badges-wrap">${abilitiesHtml}</div>
           </div>
-          <div class="detail-cell"><strong>${t('height')}:</strong> ${p.height / 10} ${t('m')}</div>
           <div class="detail-cell">
             <strong>${t('moves')}:</strong>
             <div class="mt-2">${movesBadgesHtml}</div>
           </div>
-          <div class="detail-cell"><strong>${t('weight')}:</strong> ${p.weight / 10} ${t('kg')}</div>
+          <div class="detail-cell detail-cell-height"><strong>${t('height')}:</strong> ${p.height / 10} ${t('m')}</div>
+          <div class="detail-cell detail-cell-weight"><strong>${t('weight')}:</strong> ${p.weight / 10} ${t('kg')}</div>
+          ${locationsSectionHtml ? `<div class="detail-cell detail-location-full">${locationsSectionHtml}</div>` : ''}
           ${evolutionHtml ? `<div class="detail-cell detail-evolution-full">${evolutionHtml}</div>` : ''}
         </div>
       </div>

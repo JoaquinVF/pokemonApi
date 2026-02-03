@@ -50,6 +50,7 @@ const translations = {
     phaseBase: 'Base', phaseStage1: 'Etapa 1', phaseStage2: 'Etapa 2 (evolución final)', allRegions: 'Todas', allGenerations: 'Todas',
     applyFilters: 'Aplicar filtros', clearFilters: 'Limpiar', legendary: 'Legendario', mythical: 'Mítico', baby: 'Bebé',
     levelUp: 'Subir de nivel', useItem: 'Usar objeto', trade: 'Intercambio', happiness: 'Felicidad', item: 'Objeto', values: 'Valores',
+    habitat: 'Hábitat', whereToFind: 'Dónde encontrarlo', noHabitat: '—', noLocations: 'No hay datos de ubicación.', alsoIn: 'También en',
   },
   en: {
     pageTitle: 'Page', of: 'of', all: 'All types', search: 'Search by name (e.g. pikachu)',
@@ -65,7 +66,22 @@ const translations = {
     phaseStage1: 'Stage 1', phaseStage2: 'Stage 2 (final evolution)', allRegions: 'All', allGenerations: 'All',
     applyFilters: 'Apply filters', clearFilters: 'Clear', legendary: 'Legendary', mythical: 'Mythical', baby: 'Baby',
     levelUp: 'Level up', useItem: 'Use item', trade: 'Trade', happiness: 'Happiness', item: 'Item', values: 'Values',
+    habitat: 'Habitat', whereToFind: 'Where to find', noHabitat: '—', noLocations: 'No location data.', alsoIn: 'Also in',
   },
+};
+
+/** Nombres de hábitat de la API (grassland, cave, etc.) → texto legible. */
+export const habitatNames = {
+  cave: { es: 'Cueva', en: 'Cave' }, grassland: { es: 'Pradera', en: 'Grassland' }, mountain: { es: 'Montaña', en: 'Mountain' },
+  rare: { es: 'Raro', en: 'Rare' }, 'rough-terrain': { es: 'Terreno accidentado', en: 'Rough terrain' }, sea: { es: 'Mar', en: 'Sea' },
+  urban: { es: 'Urbano', en: 'Urban' }, 'waters-edge': { es: 'Orilla del agua', en: 'Water\'s edge' },
+};
+
+/** Métodos de encuentro de la API (walk, surf, etc.) → texto legible. */
+export const encounterMethodNames = {
+  walk: { es: 'Caminar (hierba/cueva)', en: 'Walk (grass/cave)' }, surf: { es: 'Surf', en: 'Surf' },
+  'old-rod': { es: 'Caña vieja', en: 'Old rod' }, 'good-rod': { es: 'Caña buena', en: 'Good rod' }, 'super-rod': { es: 'Super caña', en: 'Super rod' },
+  'headbutt': { es: 'Cabezazo', en: 'Headbutt' }, 'rock-smash': { es: 'Golpe roca', en: 'Rock smash' },
 };
 
 /** Devuelve el texto traducido para la clave dada. */
