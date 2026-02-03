@@ -1,5 +1,5 @@
 :root{
-  --bg:#424242;
+  --bg:#9b2727;
   --card:#fff;
   --muted:#666;
   --accent:#ff1f1f;
@@ -152,6 +152,18 @@ body{font-family:Inter,Segoe UI,Arial; margin:0; background:var(--bg); color:#11
 .detail-row1-left .detail-tags{display:inline-flex;flex-wrap:wrap;gap:.5rem;align-items:center}
 .detail-resistance-cell{grid-row:span 2;align-self:stretch}
 .detail-evolution-full{grid-column:1/-1;margin-top:.5rem}
+.detail-location-full{grid-column:1/-1;margin-top:.5rem;padding-top:.5rem;border-top:1px solid #eee}
+.detail-location-list{list-style:none;padding-left:0;font-size:.9rem;max-height:200px;overflow-y:auto;padding-right:.5rem;margin-bottom:0;border:1px solid #eee;border-radius:8px;padding:.5rem .75rem;background:#fafafa}
+.detail-location-list .detail-location-item{margin-bottom:.35rem;padding:.2rem 0}
+.detail-location-list .detail-location-item:last-child{margin-bottom:0}
+.detail-location-list .text-muted{font-size:.85em}
+.detail-location-count{font-weight:normal;color:var(--muted);font-size:.85em}
+.detail-cell-height,
+.detail-cell-weight{grid-column:span 1}
+@media(max-width:767px){
+  .detail-cell-height,
+  .detail-cell-weight{grid-column:span 1}
+}
 .detail-image-container{min-width:0}
 .detail-image-wrap{
   position:relative;
@@ -229,6 +241,9 @@ body{font-family:Inter,Segoe UI,Arial; margin:0; background:var(--bg); color:#11
 .error-toast{position:fixed;bottom:20px;right:20px;background:#dc3545;color:#fff;padding:14px 18px;border-radius:8px;box-shadow:0 4px 12px rgba(220,53,69,0.3);font-size:.9rem;opacity:0;transform:translateY(10px);transition:all .3s ease;z-index:9999}
 .error-toast.show{opacity:1;transform:translateY(0)}
 
+.controls-search-form{flex:0 0 calc(75% - 0.25rem);min-width:200px}
+.controls-advanced-btn{flex:0 0 calc(25% - 0.25rem);min-width:120px;background:#fff !important;color:#000 !important;border-color:#dee2e6}
+.controls-advanced-btn:hover{background:#f8f9fa !important;color:#000 !important;border-color:#adb5bd}
 .search-wrapper{position:relative}
 .search-suggestions{position:absolute;top:100%;left:0;right:38px;background:#fff;border:1px solid #ddd;border-top:none;border-radius:0 0 8px 8px;max-height:300px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:1000}
 .suggestion-item{padding:10px 12px;cursor:pointer;border-bottom:1px solid #f0f0f0;transition:background .15s;font-size:.9rem}

@@ -88,6 +88,18 @@ export async function getEvolutionChain(pokemonId) {
   return full.map(e => ({ name: e.name, minLevel: e.minLevel }));
 }
 
+/** Lista de encuentros por location_area (zonas donde aparece el Pokémon). URL relativa en pokemon.location_area_encounters. */
+export async function getPokemonEncounters(encountersUrl) {
+  if (!encountersUrl) return [];
+  try {
+    const url = encountersUrl.startsWith('http') ? encountersUrl : `https://pokeapi.co${encountersUrl}`;
+    const data = await fetchJson(url);
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    return [];
+  }
+}
+
 /** Fase evolutiva de una especie: 'baby' | 'base' | 'stage1' | 'stage2'. */
 export async function getSpeciesEvolutionStage(speciesName) {
   if (speciesStageCache[speciesName]) return speciesStageCache[speciesName];
