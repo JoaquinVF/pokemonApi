@@ -52,7 +52,6 @@ const translations = {
     levelUp: 'Subir de nivel', useItem: 'Usar objeto', trade: 'Intercambio', happiness: 'Felicidad', item: 'Objeto', values: 'Valores',
     habitat: 'Hábitat', whereToFind: 'Dónde encontrarlo', noHabitat: '—', noLocations: 'No hay datos de ubicación.', alsoIn: 'También en',
     locColArea: 'Área', locColGame: 'Juego', locColForm: 'Forma', locColLevel: 'Nivel',
-    tcgCards: 'Cartas TCG', tcgLoading: 'Cargando cartas...', tcgNone: 'No hay cartas TCG.',
   },
   en: {
     pageTitle: 'Page', of: 'of', all: 'All types', search: 'Search by name (e.g. pikachu)',
@@ -70,7 +69,6 @@ const translations = {
     levelUp: 'Level up', useItem: 'Use item', trade: 'Trade', happiness: 'Happiness', item: 'Item', values: 'Values',
     habitat: 'Habitat', whereToFind: 'Where to find', noHabitat: '—', noLocations: 'No location data.', alsoIn: 'Also in',
     locColArea: 'Area', locColGame: 'Game', locColForm: 'Method', locColLevel: 'Level',
-    tcgCards: 'TCG Cards', tcgLoading: 'Loading cards...', tcgNone: 'No TCG cards.',
   },
 };
 
