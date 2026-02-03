@@ -191,4 +191,6 @@ body{font-family:Inter,Segoe UI,Arial; margin:0; background:var(--bg); color:#11
 .site-footer{margin-top:auto;border-top:1px solid #333;font-size:0.9rem}
 main{flex:1}
 .site-footer p{color:#ccc}
+.site-footer a{color:rgba(255,255,255,0.7)}
+.site-footer a:hover{color:#fff;text-decoration:underline}
 
