@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const footerEl = document.getElementById('footer-text');
   if (footerEl) footerEl.textContent = t('webCreatedBy');
   const footerApi = document.getElementById('footer-api');
-  if (footerApi) footerApi.innerHTML = `${t('apiUsed')} <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" class="text-white-50 text-decoration-none">https://pokeapi.co/</a>`;
+  if (footerApi) footerApi.innerHTML = `${t('apisUsed')}: <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" class="text-white-50 text-decoration-none">PokéAPI</a> (https://pokeapi.co/), <a href="https://api.pokemontcg.io/" target="_blank" rel="noopener noreferrer" class="text-white-50 text-decoration-none">Pokémon TCG API</a> (https://api.pokemontcg.io/)`;
 
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');

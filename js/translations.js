@@ -43,7 +43,7 @@ const translations = {
     abilities: 'Habilidades', baseStats: 'Estadísticas Base', moves: 'Movimientos (algunos)', back: '← Volver',
     loading: 'Cargando...', searching: 'Buscando...', error: 'Error cargando pokemones', errorDetail: 'Error cargando detalle', errorLoading: 'Error cargando información',
     type: 'Tipo', power: 'Potencia', accuracy: 'Precisión', pp: 'PP', pokemonInfo: 'Información del Pokémon',
-    webCreatedBy: 'Web creada por Joaquin L. Villanueva Farber', apiUsed: 'API usada', weakness: 'Debilidad',
+    webCreatedBy: 'Web creada por Joaquin L. Villanueva Farber', apiUsed: 'API usada', apisUsed: 'APIs usadas', weakness: 'Debilidad',
     resistance: 'Resistencia', immune: 'Inmune', evolution: 'Evolución', shiny: 'Shiny', normal: 'Normal', playCry: 'Reproducir grito',
     advancedSearch: 'Búsqueda avanzada', filterByTypes: 'Filtro por tipos (selección múltiple)', filterByPhase: 'Filtro por fase',
     filterByRegion: 'Filtro por región', filterByGeneration: 'Filtro por generación', allPhases: 'Todas', phaseBaby: 'Bebé',
@@ -52,6 +52,7 @@ const translations = {
     levelUp: 'Subir de nivel', useItem: 'Usar objeto', trade: 'Intercambio', happiness: 'Felicidad', item: 'Objeto', values: 'Valores',
     habitat: 'Hábitat', whereToFind: 'Dónde encontrarlo', noHabitat: '—', noLocations: 'No hay datos de ubicación.', alsoIn: 'También en',
     locColArea: 'Área', locColGame: 'Juego', locColForm: 'Forma', locColLevel: 'Nivel',
+    tcgCards: 'Cartas TCG', tcgLoading: 'Cargando cartas...', tcgNone: 'No hay cartas TCG.',
   },
   en: {
     pageTitle: 'Page', of: 'of', all: 'All types', search: 'Search by name (e.g. pikachu)',
@@ -60,7 +61,7 @@ const translations = {
     height: 'Height', weight: 'Weight', m: 'm', kg: 'kg', types: 'Types', abilities: 'Abilities', baseStats: 'Base Stats',
     moves: 'Moves (some)', back: '← Back', loading: 'Loading...', searching: 'Searching...', error: 'Error loading pokemons', errorDetail: 'Error loading detail',
     errorLoading: 'Error loading information', type: 'Type', power: 'Power', accuracy: 'Accuracy', pp: 'PP',
-    pokemonInfo: 'Pokemon Information', webCreatedBy: 'Web created by Joaquin L. Villanueva Farber', apiUsed: 'API used',
+    pokemonInfo: 'Pokemon Information', webCreatedBy: 'Web created by Joaquin L. Villanueva Farber', apiUsed: 'API used', apisUsed: 'APIs used',
     weakness: 'Weakness', resistance: 'Resistance', immune: 'Immune', evolution: 'Evolution', shiny: 'Shiny', normal: 'Normal',
     playCry: 'Play cry', advancedSearch: 'Advanced search', filterByTypes: 'Filter by types (multi-select)', filterByPhase: 'Filter by phase',
     filterByRegion: 'Filter by region', filterByGeneration: 'Filter by generation', allPhases: 'All', phaseBaby: 'Baby', phaseBase: 'Base',
@@ -69,6 +70,7 @@ const translations = {
     levelUp: 'Level up', useItem: 'Use item', trade: 'Trade', happiness: 'Happiness', item: 'Item', values: 'Values',
     habitat: 'Habitat', whereToFind: 'Where to find', noHabitat: '—', noLocations: 'No location data.', alsoIn: 'Also in',
     locColArea: 'Area', locColGame: 'Game', locColForm: 'Method', locColLevel: 'Level',
+    tcgCards: 'TCG Cards', tcgLoading: 'Loading cards...', tcgNone: 'No TCG cards.',
   },
 };
 

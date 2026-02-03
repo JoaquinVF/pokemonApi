@@ -3,7 +3,7 @@
  */
 
 import { qs, API_BASE } from './config.js';
-import { fetchJson, fetchTypeDisplayName, getPokemonWeaknesses, getPokemonResistances, getEvolutionChainWithDetails, getPokemonEncounters } from './api.js';
+import { fetchJson, fetchTypeDisplayName, getPokemonWeaknesses, getPokemonResistances, getEvolutionChainWithDetails, getPokemonEncounters, getTcgCards } from './api.js';
 import { t, getStatTranslation, getAppLang, habitatNames, encounterMethodNames } from './translations.js';
 import { attachMoveHover, attachAbilityHover } from './tooltips.js';
 
@@ -189,6 +189,11 @@ export async function loadDetail() {
     } catch (_) {}
     const shinyIconHtml = '<img src="shiny-stars.png" class="detail-shiny-icon" alt="">';
     const cryIconSvg = '<svg class="detail-cry-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M15 10a3 3 0 0 1 0 4M18 9a4 4 0 0 1 0 6"/></svg>';
+    const carouselPrevSvg = '<svg class="detail-carousel-arrow" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>';
+    const carouselNextSvg = '<svg class="detail-carousel-arrow" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>';
+    const initialSlides = [];
+    if (sprite) initialSlides.push({ url: sprite, alt: capitalizedName, type: 'sprite' });
+    if (spriteShiny) initialSlides.push({ url: spriteShiny, alt: `${capitalizedName} (${t('shiny')})`, type: 'shiny' });
     const typesBadgesHtml = (await Promise.all(p.types.map(async (ty) => `<span class="badge" style="background:var(--${ty.type.name})">${await fetchTypeDisplayName(ty.type.name)}</span>`))).join(' ');
     const statsBlocksHtml = p.stats.map(s => `
       <div class="mb-3">
@@ -201,12 +206,14 @@ export async function loadDetail() {
         </div>
       </div>
     `).join('');
-    const movesBadgesHtml = p.moves.slice(0, 12).map(m => `<span class="badge bg-secondary me-2 mb-2 move-badge" data-url="${m.move.url}">${m.move.name}</span>`).join('');
+    const cap = s => (s && s.length) ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s;
+const movesBadgesHtml = p.moves.slice(0, 12).map(m => `<span class="badge bg-secondary me-2 mb-2 move-badge" data-url="${m.move.url}">${(m.move.name || '').split(/[\s-]+/).map(cap).join(' ')}</span>`).join('');
 
     if (!container) return;
     container.innerHTML = `
-      <div class="detail-card-inner">
-        <div class="detail-grid">
+      <div class="detail-card">
+        <div class="detail-card-inner">
+          <div class="detail-grid">
           <div class="detail-cell detail-row1-left">
             ${tagParts.length > 0 ? `<div class="detail-tags">${tagParts.join(' ')}</div>` : ''}
           </div>
@@ -215,7 +222,12 @@ export async function loadDetail() {
           </div>
           <div class="detail-cell detail-row2-left detail-image-container">
             <div class="detail-image-wrap">
-              ${sprite ? `<img id="detailPokemonSprite" src="${sprite}" alt="${p.name}" class="detail-sprite">` : ''}
+              <div class="detail-carousel">
+                ${initialSlides.length > 0 ? `<img id="detailCarouselImage" src="${initialSlides[0].url}" alt="${initialSlides[0].alt}" class="detail-sprite detail-carousel-img">` : ''}
+                <button type="button" class="btn btn-sm detail-carousel-prev" id="carouselPrevBtn" aria-label="${t('prev')}" title="${t('prev')}">${carouselPrevSvg}</button>
+                <button type="button" class="btn btn-sm detail-carousel-next" id="carouselNextBtn" aria-label="${t('next')}" title="${t('next')}">${carouselNextSvg}</button>
+                <div class="detail-carousel-dots" id="carouselDots" role="tablist" aria-label="Slides"></div>
+              </div>
               ${hasCry ? `<button type="button" class="btn btn-sm detail-cry-btn" id="cryBtn" data-pokemon-id="${p.id}" aria-label="${t('playCry')}" title="${t('playCry')}">${cryIconSvg}</button>` : ''}
               ${spriteShiny ? `<button type="button" class="btn btn-sm detail-shiny-btn" id="shinyToggleBtn" aria-pressed="false" aria-label="${t('shiny')}" title="${t('shiny')}">${shinyIconHtml}</button>` : ''}
             </div>
@@ -246,6 +258,20 @@ export async function loadDetail() {
           <div class="detail-cell detail-cell-weight"><strong>${t('weight')}:</strong> ${p.weight / 10} ${t('kg')}</div>
           ${locationsSectionHtml ? `<div class="detail-cell detail-location-full">${locationsSectionHtml}</div>` : ''}
           ${evolutionHtml ? `<div class="detail-cell detail-evolution-full">${evolutionHtml}</div>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="detail-tcg-container" id="detailTcgSection">
+        <h4 class="h6 mb-2">${t('tcgCards')}</h4>
+        <div class="detail-tcg-carousel-wrap">
+          <p class="detail-tcg-loading" id="tcgLoadingText">${t('tcgLoading')}</p>
+          <div class="detail-carousel detail-tcg-carousel" id="tcgCarouselWrap" style="display:none">
+            <img id="tcgCarouselImage" class="detail-carousel-img" src="" alt="">
+            <button type="button" class="btn btn-sm detail-carousel-prev" id="tcgCarouselPrev" aria-label="${t('prev')}" title="${t('prev')}">${carouselPrevSvg}</button>
+            <button type="button" class="btn btn-sm detail-carousel-next" id="tcgCarouselNext" aria-label="${t('next')}" title="${t('next')}">${carouselNextSvg}</button>
+            <div class="detail-carousel-dots" id="tcgCarouselDots" role="tablist" aria-label="Slides"></div>
+          </div>
+          <p class="detail-tcg-none" id="tcgNoneText" style="display:none">${t('tcgNone')}</p>
         </div>
       </div>
     `;
@@ -259,28 +285,115 @@ export async function loadDetail() {
         audio.play().catch(() => {});
       });
     }
-    if (spriteShiny) {
-      const shinyBtn = document.getElementById('shinyToggleBtn');
-      const detailImg = document.getElementById('detailPokemonSprite');
-      if (shinyBtn && detailImg) {
-        shinyBtn.addEventListener('click', () => {
-          const isShiny = shinyBtn.getAttribute('aria-pressed') === 'true';
-          if (isShiny) {
-            detailImg.src = sprite;
-            shinyBtn.setAttribute('aria-label', t('shiny'));
-            shinyBtn.setAttribute('title', t('shiny'));
-            shinyBtn.setAttribute('aria-pressed', 'false');
-            shinyBtn.classList.remove('detail-shiny-btn--active');
-          } else {
-            detailImg.src = spriteShiny;
-            shinyBtn.setAttribute('aria-label', t('normal'));
-            shinyBtn.setAttribute('title', t('normal'));
-            shinyBtn.setAttribute('aria-pressed', 'true');
-            shinyBtn.classList.add('detail-shiny-btn--active');
-          }
+
+    const carouselImg = document.getElementById('detailCarouselImage');
+    const carouselPrevBtn = document.getElementById('carouselPrevBtn');
+    const carouselNextBtn = document.getElementById('carouselNextBtn');
+    const shinyBtn = document.getElementById('shinyToggleBtn');
+    const slides = [...initialSlides];
+    let currentIndex = 0;
+
+    const carouselDotsEl = document.getElementById('carouselDots');
+    function updateCarouselDots() {
+      if (!carouselDotsEl || slides.length <= 1) {
+        if (carouselDotsEl) carouselDotsEl.innerHTML = '';
+        return;
+      }
+      carouselDotsEl.innerHTML = slides.map((_, i) =>
+        `<button type="button" class="detail-carousel-dot ${i === currentIndex ? 'detail-carousel-dot--active' : ''}" role="tab" aria-selected="${i === currentIndex}" aria-label="${i + 1} ${t('of')} ${slides.length}" data-index="${i}"></button>`
+      ).join('');
+      carouselDotsEl.querySelectorAll('.detail-carousel-dot').forEach((btn, i) => {
+        btn.addEventListener('click', () => showSlide(i));
+      });
+    }
+    function showSlide(index) {
+      if (!carouselImg || slides.length === 0) return;
+      if (index < 0) index = 0;
+      if (index >= slides.length) index = slides.length - 1;
+      currentIndex = index;
+      const slide = slides[currentIndex];
+      carouselImg.src = slide.url;
+      carouselImg.alt = slide.alt;
+      if (carouselPrevBtn) carouselPrevBtn.disabled = slides.length <= 1;
+      if (carouselNextBtn) carouselNextBtn.disabled = slides.length <= 1;
+      if (carouselPrevBtn) carouselPrevBtn.style.visibility = slides.length <= 1 ? 'hidden' : 'visible';
+      if (carouselNextBtn) carouselNextBtn.style.visibility = slides.length <= 1 ? 'hidden' : 'visible';
+      if (shinyBtn && spriteShiny) {
+        const onShinySlide = slide.type === 'shiny';
+        shinyBtn.setAttribute('aria-pressed', onShinySlide ? 'true' : 'false');
+        shinyBtn.setAttribute('aria-label', onShinySlide ? t('normal') : t('shiny'));
+        shinyBtn.setAttribute('title', onShinySlide ? t('normal') : t('shiny'));
+        shinyBtn.classList.toggle('detail-shiny-btn--active', onShinySlide);
+      }
+      updateCarouselDots();
+    }
+
+    if (carouselPrevBtn) {
+      carouselPrevBtn.addEventListener('click', () => { showSlide(currentIndex - 1); });
+      carouselPrevBtn.disabled = slides.length <= 1;
+      carouselPrevBtn.style.visibility = slides.length <= 1 ? 'hidden' : 'visible';
+    }
+    if (carouselNextBtn) {
+      carouselNextBtn.addEventListener('click', () => { showSlide(currentIndex + 1); });
+      carouselNextBtn.disabled = slides.length <= 1;
+      carouselNextBtn.style.visibility = slides.length <= 1 ? 'hidden' : 'visible';
+    }
+    if (shinyBtn && spriteShiny && slides.length >= 2) {
+      shinyBtn.addEventListener('click', () => {
+        const onShiny = currentIndex === 1;
+        showSlide(onShiny ? 0 : 1);
+      });
+    }
+
+    updateCarouselDots();
+
+    const tcgLoadingText = document.getElementById('tcgLoadingText');
+    const tcgCarouselWrap = document.getElementById('tcgCarouselWrap');
+    const tcgNoneText = document.getElementById('tcgNoneText');
+    const tcgCarouselImage = document.getElementById('tcgCarouselImage');
+    const tcgCarouselPrev = document.getElementById('tcgCarouselPrev');
+    const tcgCarouselNext = document.getElementById('tcgCarouselNext');
+    const tcgCarouselDotsEl = document.getElementById('tcgCarouselDots');
+    getTcgCards(p.name).then(cards => {
+      if (tcgLoadingText) tcgLoadingText.style.display = 'none';
+      if (cards.length === 0) {
+        if (tcgNoneText) tcgNoneText.style.display = 'block';
+        return;
+      }
+      if (tcgCarouselWrap) tcgCarouselWrap.style.display = 'flex';
+      const tcgSlides = cards.map(c => ({ url: c.url, alt: c.alt }));
+      let tcgIndex = 0;
+      function updateTcgDots() {
+        if (!tcgCarouselDotsEl || tcgSlides.length <= 1) {
+          if (tcgCarouselDotsEl) tcgCarouselDotsEl.innerHTML = '';
+          return;
+        }
+        tcgCarouselDotsEl.innerHTML = tcgSlides.map((_, i) =>
+          `<button type="button" class="detail-carousel-dot ${i === tcgIndex ? 'detail-carousel-dot--active' : ''}" role="tab" aria-selected="${i === tcgIndex}" aria-label="${i + 1} ${t('of')} ${tcgSlides.length}" data-index="${i}"></button>`
+        ).join('');
+        tcgCarouselDotsEl.querySelectorAll('.detail-carousel-dot').forEach((btn, i) => {
+          btn.addEventListener('click', () => showSlideTcg(i));
         });
       }
-    }
+      function showSlideTcg(index) {
+        if (!tcgCarouselImage || tcgSlides.length === 0) return;
+        if (index < 0) index = 0;
+        if (index >= tcgSlides.length) index = tcgSlides.length - 1;
+        tcgIndex = index;
+        const slide = tcgSlides[tcgIndex];
+        tcgCarouselImage.src = slide.url;
+        tcgCarouselImage.alt = slide.alt;
+        if (tcgCarouselPrev) tcgCarouselPrev.disabled = tcgSlides.length <= 1;
+        if (tcgCarouselNext) tcgCarouselNext.disabled = tcgSlides.length <= 1;
+        if (tcgCarouselPrev) tcgCarouselPrev.style.visibility = tcgSlides.length <= 1 ? 'hidden' : 'visible';
+        if (tcgCarouselNext) tcgCarouselNext.style.visibility = tcgSlides.length <= 1 ? 'hidden' : 'visible';
+        updateTcgDots();
+      }
+      showSlideTcg(0);
+      if (tcgCarouselPrev) tcgCarouselPrev.addEventListener('click', () => showSlideTcg(tcgIndex - 1));
+      if (tcgCarouselNext) tcgCarouselNext.addEventListener('click', () => showSlideTcg(tcgIndex + 1));
+    });
+
     try { attachMoveHover(container); } catch (e) { /* no-op */ }
     try { attachAbilityHover(container); } catch (e) { /* no-op */ }
   } catch (e) {

@@ -2,7 +2,7 @@
  * Llamadas a la PokéAPI y datos derivados (tipos, debilidades, evolución).
  */
 
-import { API_BASE } from './config.js';
+import { API_BASE, TCG_API_BASE, TCG_CARDS_MAX } from './config.js';
 import { getAppLang, typeTranslations } from './translations.js';
 
 /** Petición GET a una URL y parseo de JSON. */
@@ -96,6 +96,36 @@ export async function getPokemonEncounters(encountersUrl) {
     const data = await fetchJson(url);
     return Array.isArray(data) ? data : [];
   } catch (e) {
+    return [];
+  }
+}
+
+/** Cache en memoria de cartas TCG por nombre de Pokémon (para no repetir peticiones). */
+const tcgCardsCache = new Map();
+
+/**
+ * Obtiene hasta N cartas TCG del Pokémon por nombre. Usa imágenes small para carga rápida.
+ * No bloquea la carga de la página: llamar después de pintar el detalle.
+ * @param {string} pokemonName - Nombre del Pokémon (ej. "charizard")
+ * @returns {Promise<Array<{url: string, alt: string}>>}
+ */
+export async function getTcgCards(pokemonName) {
+  const key = (pokemonName || '').toLowerCase();
+  if (tcgCardsCache.has(key)) return tcgCardsCache.get(key);
+  try {
+    const q = encodeURIComponent(`name:${key}`);
+    const url = `${TCG_API_BASE}/cards?q=${q}&pageSize=${TCG_CARDS_MAX}`;
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const json = await res.json();
+    const list = Array.isArray(json?.data) ? json.data : [];
+    const cards = list
+      .filter(c => c?.images?.small)
+      .map(c => ({ url: c.images.small, alt: c.name || pokemonName }));
+    tcgCardsCache.set(key, cards);
+    return cards;
+  } catch (e) {
+    tcgCardsCache.set(key, []);
     return [];
   }
 }
