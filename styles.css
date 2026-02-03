@@ -30,13 +30,15 @@
   font-style: normal;
   font-display: swap;
 }
-body{font-family:Inter,Segoe UI,Arial; margin:0; background:var(--bg); color:#111; min-height:100vh; display:flex; flex-direction:column}
+body{font-family:Inter,Segoe UI,Arial; margin:0; background:var(--bg); color:#111; min-height:100vh; display:flex; flex-direction:column; position:relative}
+body::before{content:'';position:absolute;inset:0;background:url('topography.svg') repeat;background-size:600px 600px;opacity:0.25;pointer-events:none;z-index:0}
 .site-header{
   padding:20px 16px;
   text-align:center;
   background:linear-gradient(90deg,#fefefe,#f1f6ff);
   position:relative;
-  overflow:hidden;
+  z-index:1;
+  overflow:visible;
 }
 .site-header::before{
   content:'';
@@ -153,11 +155,13 @@ body{font-family:Inter,Segoe UI,Arial; margin:0; background:var(--bg); color:#11
 .detail-resistance-cell{grid-row:span 2;align-self:stretch}
 .detail-evolution-full{grid-column:1/-1;margin-top:.5rem}
 .detail-location-full{grid-column:1/-1;margin-top:.5rem;padding-top:.5rem;border-top:1px solid #eee}
-.detail-location-list{list-style:none;padding-left:0;font-size:.9rem;max-height:200px;overflow-y:auto;padding-right:.5rem;margin-bottom:0;border:1px solid #eee;border-radius:8px;padding:.5rem .75rem;background:#fafafa}
-.detail-location-list .detail-location-item{margin-bottom:.35rem;padding:.2rem 0}
-.detail-location-list .detail-location-item:last-child{margin-bottom:0}
-.detail-location-list .text-muted{font-size:.85em}
-.detail-location-count{font-weight:normal;color:var(--muted);font-size:.85em}
+.detail-location-grid-wrap{max-height:280px;overflow-y:auto;border:1px solid #eee;border-radius:8px;background:#fafafa}
+.detail-location-table{width:100%;border-collapse:collapse;font-size:.9rem}
+.detail-location-table thead{position:sticky;top:0;z-index:1;background:#f0f0f0;box-shadow:0 1px 0 #eee}
+.detail-location-table th{text-align:left;padding:.5rem .75rem;font-weight:600;color:#333;border-bottom:2px solid #dee2e6}
+.detail-location-table td{padding:.4rem .75rem;border-bottom:1px solid #eee}
+.detail-location-table tbody tr:hover{background:#f5f5f5}
+.detail-location-table tbody tr:last-child td{border-bottom:none}
 .detail-cell-height,
 .detail-cell-weight{grid-column:span 1}
 @media(max-width:767px){
@@ -227,7 +231,7 @@ body{font-family:Inter,Segoe UI,Arial; margin:0; background:var(--bg); color:#11
 .page-ellipsis{color:var(--muted);font-weight:600;user-select:none}
 .page-info{font-weight:600;color:#212529}
 
-.detail-container{max-width:900px;margin:18px auto;background:var(--card);padding:18px;border-radius:12px;box-shadow:0 6px 20px rgba(10,20,30,0.06)}
+.detail-container{max-width:900px;margin:18px auto;background:#fff;background-image:none;padding:18px;border-radius:12px;box-shadow:0 6px 20px rgba(10,20,30,0.06)}
 .detail-top{display:flex;gap:18px;align-items:center}
 .detail-sprite{width:220px;height:220px;display:flex;align-items:center;justify-content:center}
 .detail-body{flex:1}
@@ -309,9 +313,11 @@ body{font-family:Inter,Segoe UI,Arial; margin:0; background:var(--bg); color:#11
 }
 .detail-tag-baby{background:#87ceeb;color:#1a1a2e}
 
-.site-footer{margin-top:auto;border-top:1px solid #333;font-size:0.9rem}
-main{flex:1}
-.site-footer p{color:#ccc}
-.site-footer a{color:rgba(255,255,255,0.7)}
-.site-footer a:hover{color:#fff;text-decoration:underline}
+.site-footer{margin-top:auto;border-top:1px solid #333;font-size:0.9rem;position:relative;overflow:hidden}
+.site-footer::before{content:'';position:absolute;inset:0;background:url('topography.svg') repeat;background-size:600px 600px;filter:invert(1);opacity:0.25;pointer-events:none;z-index:0}
+.site-footer>.container{position:relative;z-index:1}
+main{flex:1;position:relative;z-index:1}
+.site-footer p{color:#e8e8e8}
+.site-footer a{color:#fff}
+.site-footer a:hover{color:#ffcb00;text-decoration:underline}
 
