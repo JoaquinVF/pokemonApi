@@ -11,7 +11,7 @@
 <body>
   <header class="site-header py-5">
     <div class="container">
-      <div style="max-width: 700px; margin: 0 auto;">
+      <a href="index.html" class="d-block text-decoration-none" style="max-width: 700px; margin: 0 auto;" aria-label="Ir al inicio">
         <svg viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: auto;">
           <defs>
             <style>
@@ -58,7 +58,7 @@
             </text>
           </g>
         </svg>
-      </div>
+      </a>
     </div>
   </header>
 
@@ -72,9 +72,65 @@
             <div id="searchSuggestions" class="search-suggestions"></div>
           </div>
         </form>
-        <select id="typeSelect" class="form-select" style="max-width:200px;" aria-label="Filtrar por tipo">
-          <option value="all">Todos los tipos</option>
-        </select>
+        <button type="button" id="advancedSearchBtn" class="btn btn-outline-secondary" aria-expanded="false" aria-controls="advancedSearchAccordion">
+          Búsqueda avanzada
+        </button>
+      </div>
+      <div id="advancedSearchAccordion" class="advanced-search-accordion collapse mb-3" aria-hidden="true">
+        <div class="accordion" id="advancedFiltersAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#filterTypes" aria-expanded="false" aria-controls="filterTypes" id="accordionTypesLabel">Filtro por tipos (selección múltiple)</button>
+            </h2>
+            <div id="filterTypes" class="accordion-collapse collapse" data-bs-parent="#advancedFiltersAccordion">
+              <div class="accordion-body" id="filterTypesCheckboxes"></div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#filterPhase" aria-expanded="false" aria-controls="filterPhase" id="accordionPhaseLabel">Filtro por fase</button>
+            </h2>
+            <div id="filterPhase" class="accordion-collapse collapse" data-bs-parent="#advancedFiltersAccordion">
+              <div class="accordion-body">
+                <select id="filterPhaseSelect" class="form-select">
+                  <option value="all">Todas</option>
+                  <option value="baby">Bebé</option>
+                  <option value="base">Base</option>
+                  <option value="stage1">Etapa 1</option>
+                  <option value="stage2">Etapa 2 (evolución final)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#filterRegion" aria-expanded="false" aria-controls="filterRegion" id="accordionRegionLabel">Filtro por región</button>
+            </h2>
+            <div id="filterRegion" class="accordion-collapse collapse" data-bs-parent="#advancedFiltersAccordion">
+              <div class="accordion-body">
+                <select id="filterRegionSelect" class="form-select">
+                  <option value="all">Todas</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#filterGeneration" aria-expanded="false" aria-controls="filterGeneration" id="accordionGenLabel">Filtro por generación</button>
+            </h2>
+            <div id="filterGeneration" class="accordion-collapse collapse" data-bs-parent="#advancedFiltersAccordion">
+              <div class="accordion-body">
+                <select id="filterGenerationSelect" class="form-select">
+                  <option value="all">Todas</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-2">
+          <button type="button" id="applyFiltersBtn" class="btn btn-primary me-2"></button>
+          <button type="button" id="clearFiltersBtn" class="btn btn-outline-secondary"></button>
+        </div>
       </div>
       <div id="activeFilter" class="mb-3"></div>
       <section id="pokemon-list" class="grid"></section>
