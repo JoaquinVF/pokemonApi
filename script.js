@@ -64,6 +64,7 @@ const translations = {
     pp: 'PP',
     pokemonInfo: 'Información del Pokémon',
     webCreatedBy: 'Web creada por Joaquin L. Villanueva Farber',
+    apiUsed: 'API usada',
     weakness: 'Debilidad',
     evolution: 'Evolución',
     shiny: 'Shiny',
@@ -101,6 +102,7 @@ const translations = {
     pp: 'PP',
     pokemonInfo: 'Pokemon Information',
     webCreatedBy: 'Web created by Joaquin L. Villanueva Farber',
+    apiUsed: 'API used',
     weakness: 'Weakness',
     evolution: 'Evolution',
     shiny: 'Shiny',
@@ -519,9 +521,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   
   // Update footer text
   const footerEl = document.getElementById('footer-text');
-  if(footerEl){
-    footerEl.textContent = t('webCreatedBy');
-  }
+  if(footerEl) footerEl.textContent = t('webCreatedBy');
+  const footerApi = document.getElementById('footer-api');
+  if(footerApi) footerApi.innerHTML = `${t('apiUsed')} <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" class="text-white-50 text-decoration-none">https://pokeapi.co/</a>`;
 
   // Update button texts
   const prevBtn = document.getElementById('prevBtn');
