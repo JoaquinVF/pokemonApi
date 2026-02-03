@@ -354,7 +354,10 @@ const movesBadgesHtml = p.moves.slice(0, 12).map(m => `<span class="badge bg-sec
     const tcgCarouselPrev = document.getElementById('tcgCarouselPrev');
     const tcgCarouselNext = document.getElementById('tcgCarouselNext');
     const tcgCarouselDotsEl = document.getElementById('tcgCarouselDots');
+    const tcgStart = performance.now();
     getTcgCards(p.name).then(cards => {
+      const tcgMs = Math.round(performance.now() - tcgStart);
+      console.log(`[TCG] Cartas cargadas en ${tcgMs} ms (${cards.length} cartas)`);
       if (tcgLoadingText) tcgLoadingText.style.display = 'none';
       if (cards.length === 0) {
         if (tcgNoneText) tcgNoneText.style.display = 'block';

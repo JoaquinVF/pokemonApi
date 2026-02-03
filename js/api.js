@@ -115,6 +115,8 @@ export async function getTcgCards(pokemonName) {
   try {
     const q = encodeURIComponent(`name:${key}`);
     const url = `${TCG_API_BASE}/cards?q=${q}&pageSize=${TCG_CARDS_MAX}`;
+    // No enviar X-Api-Key desde el navegador: provoca CORS preflight y la API no devuelve Access-Control-Allow-Origin.
+    // Desde el front se usa el límite sin auth (1000/día, 30/min). La key solo en Node (ej. check-tcg-count.js).
     const res = await fetch(url);
     if (!res.ok) return [];
     const json = await res.json();
