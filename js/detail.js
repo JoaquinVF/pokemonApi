@@ -25,6 +25,12 @@ export async function loadDetail() {
     if (container) container.innerHTML = '<p>Falta nombre o id en la URL.</p>';
     return;
   }
+  if (container) {
+    container.innerHTML = `<div class="loading-detail" role="status" aria-live="polite">
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <span>${t('loading')}</span>
+    </div>`;
+  }
   try {
     const p = await fetchJson(`${API_BASE}/pokemon/${name}`);
     const capitalizedName = p.name.charAt(0).toUpperCase() + p.name.slice(1);

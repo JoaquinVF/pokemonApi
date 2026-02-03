@@ -31,6 +31,12 @@ export function initSearchAndFilters() {
     e.preventDefault();
     const q = input.value.trim().toLowerCase();
     if (!q) return;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.classList.add('btn-loading');
+      submitBtn.innerHTML = `<span class="btn-text">${t('searching')}</span>`;
+    }
     try {
       await fetchJson(`${API_BASE}/pokemon/${q}`);
       const filters = getFiltersFromUrl();
@@ -38,6 +44,11 @@ export function initSearchAndFilters() {
       location.href = `detail.html?name=${q}${query !== '?page=1' ? '&' + query.slice(1) : '&page=1'}`;
     } catch (_) {
       showErrorToast(t('notFound'));
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('btn-loading');
+        submitBtn.textContent = t('searchBtn');
+      }
     }
   });
 

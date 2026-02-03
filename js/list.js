@@ -104,6 +104,7 @@ export async function loadList(filtersArg) {
   const filters = filtersArg || getFiltersFromUrl();
   const page = Number(filters.page || '1');
   const offset = (page - 1) * LIMIT;
+  const wrap = document.getElementById('pokemon-list');
   const pageInfo = document.getElementById('pageInfo');
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
@@ -111,6 +112,15 @@ export async function loadList(filtersArg) {
   const phase = filters.phase || 'all';
   const region = filters.region || 'all';
   const generation = filters.generation || 'all';
+
+  if (wrap) {
+    wrap.innerHTML = `<div class="loading-state" style="grid-column:1/-1;width:100%;" role="status" aria-live="polite">
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <span>${t('loading')}</span>
+    </div>`;
+  }
+  if (prevBtn) prevBtn.disabled = true;
+  if (nextBtn) nextBtn.disabled = true;
 
   try {
     let allPokemonRefs = [];
