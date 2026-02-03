@@ -3,7 +3,7 @@
  */
 
 import { qs, API_BASE } from './config.js';
-import { fetchJson, fetchTypeDisplayName, getPokemonWeaknesses, getPokemonResistances, getEvolutionChainWithDetails, getPokemonEncounters, getTcgCards } from './api.js';
+import { fetchJson, fetchTypeDisplayName, getPokemonWeaknesses, getPokemonResistances, getEvolutionChainWithDetails, getPokemonEncounters } from './api.js';
 import { t, getStatTranslation, getAppLang, habitatNames, encounterMethodNames } from './translations.js';
 import { attachMoveHover, attachAbilityHover } from './tooltips.js';
 
@@ -261,19 +261,6 @@ const movesBadgesHtml = p.moves.slice(0, 12).map(m => `<span class="badge bg-sec
           </div>
         </div>
       </div>
-      <div class="detail-tcg-container" id="detailTcgSection">
-        <h4 class="h6 mb-2">${t('tcgCards')}</h4>
-        <div class="detail-tcg-carousel-wrap">
-          <p class="detail-tcg-loading" id="tcgLoadingText">${t('tcgLoading')}</p>
-          <div class="detail-carousel detail-tcg-carousel" id="tcgCarouselWrap" style="display:none">
-            <img id="tcgCarouselImage" class="detail-carousel-img" src="" alt="">
-            <button type="button" class="btn btn-sm detail-carousel-prev" id="tcgCarouselPrev" aria-label="${t('prev')}" title="${t('prev')}">${carouselPrevSvg}</button>
-            <button type="button" class="btn btn-sm detail-carousel-next" id="tcgCarouselNext" aria-label="${t('next')}" title="${t('next')}">${carouselNextSvg}</button>
-            <div class="detail-carousel-dots" id="tcgCarouselDots" role="tablist" aria-label="Slides"></div>
-          </div>
-          <p class="detail-tcg-none" id="tcgNoneText" style="display:none">${t('tcgNone')}</p>
-        </div>
-      </div>
     `;
 
     const cryBtn = document.getElementById('cryBtn');
@@ -346,56 +333,6 @@ const movesBadgesHtml = p.moves.slice(0, 12).map(m => `<span class="badge bg-sec
     }
 
     updateCarouselDots();
-
-    const tcgLoadingText = document.getElementById('tcgLoadingText');
-    const tcgCarouselWrap = document.getElementById('tcgCarouselWrap');
-    const tcgNoneText = document.getElementById('tcgNoneText');
-    const tcgCarouselImage = document.getElementById('tcgCarouselImage');
-    const tcgCarouselPrev = document.getElementById('tcgCarouselPrev');
-    const tcgCarouselNext = document.getElementById('tcgCarouselNext');
-    const tcgCarouselDotsEl = document.getElementById('tcgCarouselDots');
-    const tcgStart = performance.now();
-    getTcgCards(p.name).then(cards => {
-      const tcgMs = Math.round(performance.now() - tcgStart);
-      console.log(`[TCG] Cartas cargadas en ${tcgMs} ms (${cards.length} cartas)`);
-      if (tcgLoadingText) tcgLoadingText.style.display = 'none';
-      if (cards.length === 0) {
-        if (tcgNoneText) tcgNoneText.style.display = 'block';
-        return;
-      }
-      if (tcgCarouselWrap) tcgCarouselWrap.style.display = 'flex';
-      const tcgSlides = cards.map(c => ({ url: c.url, alt: c.alt }));
-      let tcgIndex = 0;
-      function updateTcgDots() {
-        if (!tcgCarouselDotsEl || tcgSlides.length <= 1) {
-          if (tcgCarouselDotsEl) tcgCarouselDotsEl.innerHTML = '';
-          return;
-        }
-        tcgCarouselDotsEl.innerHTML = tcgSlides.map((_, i) =>
-          `<button type="button" class="detail-carousel-dot ${i === tcgIndex ? 'detail-carousel-dot--active' : ''}" role="tab" aria-selected="${i === tcgIndex}" aria-label="${i + 1} ${t('of')} ${tcgSlides.length}" data-index="${i}"></button>`
-        ).join('');
-        tcgCarouselDotsEl.querySelectorAll('.detail-carousel-dot').forEach((btn, i) => {
-          btn.addEventListener('click', () => showSlideTcg(i));
-        });
-      }
-      function showSlideTcg(index) {
-        if (!tcgCarouselImage || tcgSlides.length === 0) return;
-        if (index < 0) index = 0;
-        if (index >= tcgSlides.length) index = tcgSlides.length - 1;
-        tcgIndex = index;
-        const slide = tcgSlides[tcgIndex];
-        tcgCarouselImage.src = slide.url;
-        tcgCarouselImage.alt = slide.alt;
-        if (tcgCarouselPrev) tcgCarouselPrev.disabled = tcgSlides.length <= 1;
-        if (tcgCarouselNext) tcgCarouselNext.disabled = tcgSlides.length <= 1;
-        if (tcgCarouselPrev) tcgCarouselPrev.style.visibility = tcgSlides.length <= 1 ? 'hidden' : 'visible';
-        if (tcgCarouselNext) tcgCarouselNext.style.visibility = tcgSlides.length <= 1 ? 'hidden' : 'visible';
-        updateTcgDots();
-      }
-      showSlideTcg(0);
-      if (tcgCarouselPrev) tcgCarouselPrev.addEventListener('click', () => showSlideTcg(tcgIndex - 1));
-      if (tcgCarouselNext) tcgCarouselNext.addEventListener('click', () => showSlideTcg(tcgIndex + 1));
-    });
 
     try { attachMoveHover(container); } catch (e) { /* no-op */ }
     try { attachAbilityHover(container); } catch (e) { /* no-op */ }

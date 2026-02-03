@@ -155,10 +155,6 @@ body::before{content:'';position:absolute;inset:0;background:url('topography.svg
 .detail-resistance-cell{grid-row:span 2;align-self:stretch}
 .detail-evolution-full{grid-column:1/-1;margin-top:.5rem}
 .detail-location-full{grid-column:1/-1;margin-top:.5rem;padding-top:.5rem;border-top:1px solid #eee}
-.detail-tcg-container{background:#f8f9fa;border:1px solid #e9ecef;border-radius:12px;padding:1.25rem;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-.detail-tcg-carousel-wrap{position:relative;min-height:180px}
-.detail-tcg-loading,.detail-tcg-none{color:#666;margin:0.5rem 0}
-.detail-tcg-carousel .detail-carousel-dots{position:absolute;bottom:0}
 .detail-location-grid-wrap{max-height:280px;overflow-y:auto;border:1px solid #eee;border-radius:8px;background:#fafafa}
 .detail-location-table{width:100%;border-collapse:collapse;font-size:.9rem}
 .detail-location-table thead{position:sticky;top:0;z-index:1;background:#f0f0f0;box-shadow:0 1px 0 #eee}
